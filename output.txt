@@ -1,0 +1,566 @@
+----Method----
+name: <init>
+desc: ()V
+Siganture: null
+Local Variable:{
+}
+Instruction: {
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+()V
+Opcode: 25
+Type: 2
+Opcode: 4
+Type: 0
+Opcode: 181
+Type: 4
+Opcode: 25
+Type: 2
+Opcode: 3
+Type: 0
+Opcode: 181
+Type: 4
+Opcode: 177
+Type: 0
+}
+----Method----
+name: initializeControls
+desc: ()V
+Siganture: null
+Local Variable:{
+}
+Instruction: {
+Opcode: 25
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 18
+Type: 9
+Opcode: 182
+Type: 5
+(I)Landroid/view/View;
+findViewById
+Opcode: 181
+Type: 4
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 3
+Type: 0
+Opcode: 182
+Type: 5
+(I)V
+setBackgroundColor
+Opcode: 25
+Type: 2
+Opcode: 187
+Type: 3
+Opcode: 89
+Type: 0
+Opcode: 25
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 183
+Type: 5
+(Lcom/youdao/dict/activity/QuickDictActivity;Lcom/youdao/dict/widget/DictWebView;)V
+Opcode: 181
+Type: 4
+Opcode: 25
+Type: 2
+Opcode: 18
+Type: 9
+Opcode: 182
+Type: 5
+(I)Landroid/view/View;
+findViewById
+Opcode: 187
+Type: 3
+Opcode: 89
+Type: 0
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+(Lcom/youdao/dict/activity/QuickDictActivity;)V
+Opcode: 182
+Type: 5
+(Landroid/view/View$OnClickListener;)V
+setOnClickListener
+Opcode: 178
+Type: 4
+Opcode: 153
+Type: 7
+Opcode: 25
+Type: 2
+Opcode: 18
+Type: 9
+Opcode: 182
+Type: 5
+(I)Landroid/view/View;
+findViewById
+Opcode: 187
+Type: 3
+Opcode: 89
+Type: 0
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+(Lcom/youdao/dict/activity/QuickDictActivity;)V
+Opcode: 182
+Type: 5
+(Landroid/view/View$OnClickListener;)V
+setOnClickListener
+Opcode: -1
+Type: 8
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 187
+Type: 3
+Opcode: 89
+Type: 0
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+(Lcom/youdao/dict/activity/QuickDictActivity;)V
+Opcode: 182
+Type: 5
+(Landroid/view/View$OnClickListener;)V
+setOnClickListener
+Opcode: 177
+Type: 0
+}
+----Method----
+name: finish
+desc: ()V
+Siganture: null
+Local Variable:{
+}
+Instruction: {
+Opcode: 25
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 184
+Type: 5
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+()V
+Opcode: 177
+Type: 0
+}
+----Method----
+name: onActivityResult
+desc: (IILandroid/content/Intent;)V
+Siganture: null
+Local Variable:{
+}
+Instruction: {
+Opcode: 21
+Type: 2
+Opcode: 16
+Type: 1
+Opcode: 160
+Type: 7
+Opcode: 21
+Type: 2
+Opcode: 2
+Type: 0
+Opcode: 159
+Type: 7
+Opcode: 25
+Type: 2
+Opcode: 198
+Type: 7
+Opcode: 18
+Type: 9
+Opcode: 25
+Type: 2
+Opcode: 182
+Type: 5
+()Ljava/lang/String;
+getAction
+Opcode: 182
+Type: 5
+(Ljava/lang/Object;)Z
+equals
+Opcode: 153
+Type: 7
+Opcode: 25
+Type: 2
+Opcode: 182
+Type: 5
+()V
+finish
+Opcode: -1
+Type: 8
+Opcode: 25
+Type: 2
+Opcode: 21
+Type: 2
+Opcode: 21
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+(IILandroid/content/Intent;)V
+Opcode: 177
+Type: 0
+Opcode: -1
+Type: 8
+Opcode: 25
+Type: 2
+Opcode: 184
+Type: 5
+Opcode: 153
+Type: 7
+Opcode: 25
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 184
+Type: 5
+Opcode: 181
+Type: 4
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 182
+Type: 5
+()V
+show
+Opcode: 167
+Type: 7
+}
+----Method----
+name: onCreate
+desc: (Landroid/os/Bundle;)V
+Siganture: null
+Local Variable:{
+}
+Instruction: {
+Opcode: 184
+Type: 5
+Opcode: 55
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 18
+Type: 9
+Opcode: 182
+Type: 5
+(I)V
+setLayoutResID
+Opcode: 25
+Type: 2
+Opcode: 18
+Type: 9
+Opcode: 181
+Type: 4
+Opcode: 25
+Type: 2
+Opcode: 4
+Type: 0
+Opcode: 182
+Type: 5
+(I)Z
+requestWindowFeature
+Opcode: 87
+Type: 0
+Opcode: 25
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+(Landroid/os/Bundle;)V
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+()V
+Opcode: 184
+Type: 5
+Opcode: 22
+Type: 2
+Opcode: 101
+Type: 0
+Opcode: 136
+Type: 0
+Opcode: 54
+Type: 2
+Opcode: 184
+Type: 5
+Opcode: 16
+Type: 1
+Opcode: 182
+Type: 5
+(I)Lcom/youdao/dict/statistics/DictStatistics;
+increase
+Opcode: 16
+Type: 1
+Opcode: 21
+Type: 2
+Opcode: 182
+Type: 5
+(II)V
+increase
+Opcode: 184
+Type: 5
+Opcode: 25
+Type: 2
+Opcode: 182
+Type: 5
+(Landroid/app/Activity;)V
+pushActivity
+Opcode: 25
+Type: 2
+Opcode: 184
+Type: 5
+Opcode: 184
+Type: 5
+Opcode: 154
+Type: 7
+Opcode: 25
+Type: 2
+Opcode: 184
+Type: 5
+Opcode: 153
+Type: 7
+Opcode: 25
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 184
+Type: 5
+Opcode: 181
+Type: 4
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 182
+Type: 5
+()V
+show
+Opcode: -1
+Type: 8
+Opcode: 177
+Type: 0
+}
+----Method----
+name: onDestroy
+desc: ()V
+Siganture: null
+Local Variable:{
+}
+Instruction: {
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+()V
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 198
+Type: 7
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 182
+Type: 5
+()V
+dismiss
+Opcode: -1
+Type: 8
+Opcode: 177
+Type: 0
+}
+----Method----
+name: onPause
+desc: ()V
+Siganture: null
+Local Variable:{
+}
+Instruction: {
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+()V
+Opcode: 184
+Type: 5
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 101
+Type: 0
+Opcode: 136
+Type: 0
+Opcode: 54
+Type: 2
+Opcode: 184
+Type: 5
+Opcode: 16
+Type: 1
+Opcode: 21
+Type: 2
+Opcode: 182
+Type: 5
+(II)V
+increase
+Opcode: 184
+Type: 5
+Opcode: 182
+Type: 5
+()V
+saveDataToFile
+Opcode: 25
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 184
+Type: 5
+Opcode: 177
+Type: 0
+}
+----Method----
+name: onRestoreInstanceState
+desc: (Landroid/os/Bundle;)V
+Siganture: null
+Local Variable:{
+}
+Instruction: {
+Opcode: 25
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+(Landroid/os/Bundle;)V
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 58
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 18
+Type: 9
+Opcode: 182
+Type: 5
+(Ljava/lang/String;)Z
+getBoolean
+Opcode: 153
+Type: 7
+Opcode: 3
+Type: 0
+Opcode: 54
+Type: 2
+Opcode: -1
+Type: 8
+Opcode: 25
+Type: 2
+Opcode: 21
+Type: 2
+Opcode: 182
+Type: 5
+(I)V
+setVisibility
+Opcode: 177
+Type: 0
+Opcode: -1
+Type: 8
+Opcode: 16
+Type: 1
+Opcode: 54
+Type: 2
+Opcode: 167
+Type: 7
+}
+----Method----
+name: onResume
+desc: ()V
+Siganture: null
+Local Variable:{
+}
+Instruction: {
+Opcode: 25
+Type: 2
+Opcode: 184
+Type: 5
+Opcode: 181
+Type: 4
+----Method----
+name: onSaveInstanceState
+desc: (Landroid/os/Bundle;)V
+Siganture: null
+Local Variable:{
+}
+Instruction: {
+Opcode: 25
+Type: 2
+Opcode: 25
+Type: 2
+Opcode: 183
+Type: 5
+(Landroid/os/Bundle;)V
+Opcode: 25
+Type: 2
+Opcode: 180
+Type: 4
+Opcode: 182
+Type: 5
+()I
+getVisibility
+Opcode: 154
+Type: 7
+Opcode: 4
+Type: 0
+Opcode: 54
+Type: 2
+Opcode: -1
+Type: 8
+Opcode: 25
+Type: 2
+Opcode: 18
+Type: 9
+Opcode: 21
+Type: 2
+Opcode: 182
+Type: 5
+(Ljava/lang/String;Z)V
+putBoolean
+Opcode: 177
+Type: 0
+Opcode: -1
+Type: 8
+Opcode: 3
+Type: 0
+Opcode: 54
+Type: 2
+Opcode: 167
+Type: 7
+}
