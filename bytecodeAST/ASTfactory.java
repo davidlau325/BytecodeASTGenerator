@@ -9,47 +9,33 @@ import java.util.Stack;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
+import org.objectweb.asm.Type;
 
 public class ASTfactory {
 	private ASTNode thisAST;
-	private HashMap<String,List<VariableOperation>> vop;
-	private Stack<String> executionStack;
+	private Stack<ASTNode> executionStack;
 	
 	public ASTfactory(){
 		this.thisAST=null;
-		this.vop=new HashMap<String,List<VariableOperation>>();
-		this.executionStack=new Stack<String>();
+		this.executionStack=new Stack<ASTNode>();
 	}
 	
-	public HashMap<String,List<VariableOperation>> getVariableOp(){
-		return this.vop;
-	}
 	public ASTNode getASTNode(){
 		return this.thisAST;
 	}
 	
-	private void insertNewVariableOperation(String index,VariableOperation vo){
-		if(this.vop.containsKey(index)){
-			this.vop.get(index).add(vo);
-		}else{
-			List<VariableOperation> tempVO=new ArrayList<VariableOperation>();
-			tempVO.add(vo);
-			this.vop.put(index,tempVO);
-		}
-	}
-	public void generateMethodAST(MethodNode mn,PrintWriter pwOut){
+	public void generateFunctionAST(MethodNode mn,PrintWriter pwOut){
 			pwOut.println("----Method----");
 			pwOut.println("name: "+mn.name);
 			pwOut.println("desc: "+mn.desc);
 			pwOut.println("Siganture: "+mn.signature);
-			pwOut.println("Local Variable:{");
-			List<LocalVariableNode> lvn=mn.localVariables;
-			if(lvn!=null){
-				for(LocalVariableNode lv:lvn){
-					pwOut.println(lv.toString());
-				}
-			}
-			pwOut.println("}");
+			
+			ASTFunctionNode afn=new ASTFunctionNode();
+			afn.setDesc(mn.desc);
+			afn.setName(mn.name);
+			afn.setSignature(mn.signature);
+			afn.setException(mn.exceptions);
+			this.thisAST=afn;
 			pwOut.println("Instruction: {");
 			InsnList insn=mn.instructions;
 			Iterator itr=insn.iterator();
@@ -63,7 +49,9 @@ public class ASTfactory {
 				case Opcodes.ICONST_0:
 					switch(ain.getType()){
 					case 0:
-						this.executionStack.push("C0");
+						ASTConstantNode acn=new ASTConstantNode();
+						acn.setConstantValue("0");
+						executionStack.push(acn);
 						break;
 					default:break;
 					}
@@ -72,7 +60,9 @@ public class ASTfactory {
 				case Opcodes.ICONST_1:
 					switch(ain.getType()){
 						case 0:
-							this.executionStack.push("C1");
+							ASTConstantNode acn=new ASTConstantNode();
+							acn.setConstantValue("1");
+							executionStack.push(acn);
 							break;
 						default:break;
 					}
@@ -81,8 +71,7 @@ public class ASTfactory {
 				case Opcodes.LDC:
 					switch(ain.getType()){
 						case 9:
-							LdcInsnNode lin=(LdcInsnNode)ain;
-							this.executionStack.push(lin.cst.toString());
+							
 							break;
 						default:break;
 					}
@@ -92,16 +81,15 @@ public class ASTfactory {
 					switch(ain.getType()){
 						case 2:
 							VarInsnNode vin=(VarInsnNode)ain;
-							this.executionStack.push(Integer.toString(vin.var));
-							VariableOperation vo=new VariableOperation();
-							vo.setIndex(Integer.toString(vin.var));
-							vo.setOperation("ALOAD");
-							vo.setMethod(mn.name);
-							insertNewVariableOperation(Integer.toString(vin.var),vo);
-						break;
+							ASTLocalVariableNode alvn=new ASTLocalVariableNode();
+							alvn.setIndex(vin.var);
+							alvn.setCallBy(this.thisAST);
+							executionStack.push(alvn);
+							break;
 						default:break;
 					}
 					break;
+				// 177
 				case Opcodes.RETURN:
 					switch(ain.getType()){
 						case 0:break;
@@ -112,33 +100,26 @@ public class ASTfactory {
 				case Opcodes.PUTFIELD:
 					switch(ain.getType()){
 						case 4: 
-							String variable=this.executionStack.pop();
-							if(this.executionStack.isEmpty()){
+							FieldInsnNode fin=(FieldInsnNode)ain;
+							ASTFieldNode fien=new ASTFieldNode();
+							if(executionStack.isEmpty()){
+								pwOut.close();
+								System.out.println("No stack");
 								return;
 							}
-							String asObject=this.executionStack.pop();
-							FieldInsnNode fin=(FieldInsnNode)ain;
-							if(!variable.substring(0,1).equals("C")){
-								VariableOperation vo=new VariableOperation();
-								vo.setIndex(variable);
-								vo.setOperation("PUTFIELD");
-								vo.setMethod(mn.name);
-								insertNewVariableOperation(variable,vo);
+							fien.setFieldValue(executionStack.pop());
+							if(executionStack.isEmpty()){
+								pwOut.close();
+								System.out.println("No stack");
+								return;
 							}
-							VariableOperation vo=new VariableOperation();
-							vo.setIndex(asObject);
-							vo.setOperation("PUTFIELD");
-							vo.setAsObject(fin.name);
-							insertNewVariableOperation(asObject,vo);
-							VariableOperation vo1=new VariableOperation();
-							vo1.setIndex(fin.name);
-							vo1.setOperation("PUTFIELD");
-							vo1.setMethod(asObject);
-							vo1.setDesc(fin.desc);
-							vo1.setValue(variable);
-							vo1.setName(fin.name);
-							insertNewVariableOperation(fin.name,vo1);
-						break;
+							fien.setCallBy(executionStack.pop());
+							fien.setName(fin.name);
+							fien.setOwner(fin.owner);
+							fien.setSignature(fin.desc);
+							
+							afn.addChild(fien);
+							break;
 						default:break;
 					}
 					break;
@@ -146,9 +127,7 @@ public class ASTfactory {
 				case Opcodes.INVOKEVIRTUAL:
 					switch(ain.getType()){
 						case 5:
-							MethodInsnNode min=(MethodInsnNode)ain;
-							pwOut.println(min.desc);
-							pwOut.println(min.name);
+							
 							break;
 						default:break;
 					}
@@ -158,15 +137,27 @@ public class ASTfactory {
 					switch(ain.getType()){
 						case 5:
 							MethodInsnNode min=(MethodInsnNode)ain;
-							pwOut.println(min.desc);
-							// find the variable as object to call function
-							String asObject=this.executionStack.pop();
-							VariableOperation vo=new VariableOperation();
-							vo.setIndex(asObject);
-							vo.setOperation("INVOKESPECIAL");
-							vo.setAsObject(min.name);
-							insertNewVariableOperation(asObject,vo);
-						break;
+							ASTMethodNode amn=new ASTMethodNode();
+							amn.setName(min.name);
+							amn.setSignature(min.desc);
+							Type[] args=Type.getArgumentTypes(min.desc);							
+							for(int i=0;i<args.length;i++){
+								amn.addParameter(executionStack.pop());
+							}
+							amn.setCallBy(executionStack.pop());
+							Type returnType=Type.getReturnType(min.desc);
+							
+							if(!returnType.toString().equals("V")){
+							ASTObjectNode returnObject=new ASTObjectNode();
+							returnObject.setObjectType(returnType.getInternalName());
+							amn.setReturnValue(returnObject);
+							executionStack.push(amn);
+							}else{
+								amn.setReturnValue(null);
+							}
+							afn.addChild(amn);
+							
+							break;
 						default:break;	
 					}
 					break;

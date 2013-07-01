@@ -50,20 +50,61 @@ public class Main {
         List<MethodNode> mnList=classNode.methods;
         for(MethodNode mn:mnList){
         	ASTfactory af=new ASTfactory();
-        	af.generateMethodAST(mn,pwOut);
+        	af.generateFunctionAST(mn,pwOut);	
+        	ASTFunctionNode functionNode=(ASTFunctionNode)af.getASTNode();
         	
-        	pwLog.println("--Variable Operation--");
-        	pwLog.println("Method Name: "+mn.name);
-        	HashMap<String,List<VariableOperation>> vop=af.getVariableOp();
+        	pwLog.println("---Function Node---");
+        	pwLog.println("Name: "+functionNode.getName());
+        	pwLog.println("Desc: "+functionNode.getDesc());
+        	pwLog.println("Sign: "+functionNode.getSignature());
+        	pwLog.println("Exception: {");
+        	for(String ex:functionNode.getException()){
+        		pwLog.println(ex);
+        	}
+        	pwLog.println("}");
         	
-        	for(String key:vop.keySet()){
-        		List<VariableOperation> lvo=vop.get(key);
-        		for(VariableOperation vo:lvo){
-        			pwLog.println(vo.getIndex()+" "+vo.getOperation()+" "+vo.getMethod() + " " +vo.getAsObject() +" "+vo.getDesc() );
+        	for(ASTNode ob:functionNode.getChild()){
+        		if(ob.getASTKind().equals("ASTFieldNode")){
+        			ASTFieldNode afn=(ASTFieldNode)ob;
+        			pwLog.println("---FieldNode---");
+        			pwLog.println("Name: "+afn.getName());
+        			pwLog.println("Owner: "+afn.getOwner());
+        			pwLog.println("Field Value: {");
+        			pwLog.println("Type: "+afn.getFieldValue().getASTKind());
+        			pwLog.println("}");
+        			pwLog.println("Call By: {");
+        			pwLog.println("Type: "+afn.getCallBy().getASTKind());
+        			pwLog.println("}");
+        			
+        		}else if(ob.getASTKind().equals("ASTMethodNode")){
+        			ASTMethodNode amn=(ASTMethodNode)ob;
+        			pwLog.println("---MethodNode---");
+        			pwLog.println("Name: "+amn.getName());
+        			pwLog.println("Desc: "+amn.getSignature());
+        			pwLog.println("Call By: {");
+        			pwLog.println("Type: "+amn.getCallBy().getASTKind());
+        			pwLog.println("}");
+        			pwLog.println("Parameter: {");
+        			for(ASTNode asn:amn.getPara()){
+        				pwLog.println("Type: "+asn.getASTKind());
+        				pwLog.println("------");
+        			}
+        			pwLog.println("}");
+        			pwLog.println("Return Value: {");
+        			if(amn.getReturnValue()==null){
+        				pwLog.println("Type: void");
+        			}else{
+        				pwLog.println("Type: "+amn.getReturnValue().getASTKind());
+        				if(amn.getUsedBy()!=null){
+        				pwLog.println("To: "+amn.getUsedBy().getASTKind());
+        				}else{
+        				pwLog.println("To: no used");
+        				}
+        			}
+        			pwLog.println("}");
         		}
         		pwLog.println();
         	}
-        	pwLog.println();
         }
         
        
