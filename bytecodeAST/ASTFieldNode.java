@@ -2,11 +2,8 @@ package bytecodeAST;
 
 public class ASTFieldNode extends ASTNode {
 	
-	private String name;
-	private String owner;
-	private ASTNode fieldValue;
-	
 	public ASTFieldNode(){
+		super();
 		this.ASTKind="ASTFieldNode";
 	}
 	

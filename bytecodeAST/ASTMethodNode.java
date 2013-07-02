@@ -4,11 +4,9 @@ import java.util.ArrayList;
 
 public class ASTMethodNode extends ASTNode {
 	
-	private String name;
-	
 	public ASTMethodNode(){
+		super();
 		this.ASTKind="ASTMethodNode";
-		this.parameter=new ArrayList<ASTNode>();
 	}
 	
 	public void setName(String name){

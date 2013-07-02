@@ -1,14 +1,10 @@
 package bytecodeAST;
 
-import java.util.ArrayList;
-
 public class ASTObjectNode extends ASTNode{
 	
-	private String ObjectType;
-	
 	public ASTObjectNode(){
+		super();
 		this.ASTKind="ASTObjectNode";
-		this.parameter=new ArrayList<ASTNode>();
 	}
 	
 	public void setObjectType(String type){

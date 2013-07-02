@@ -2,9 +2,8 @@ package bytecodeAST;
 
 public class ASTConstantNode extends ASTNode {
 	
-	private String constantValue;
-	
 	public ASTConstantNode(){
+		super();
 		this.ASTKind="ASTConstantNode";
 	}
 	

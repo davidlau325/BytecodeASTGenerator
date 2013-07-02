@@ -4,15 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ASTFunctionNode extends ASTNode{
-	
-	private ArrayList<ASTNode> childMethod;
-	private String name;
-	private String desc;
-	private List<String> exception;
 
 	public ASTFunctionNode(){
+		super();
 		this.ASTKind="ASTFunctionNode";
-		this.parameter=new ArrayList<ASTNode>();
 		this.childMethod=new ArrayList<ASTNode>();
 	}
 	
