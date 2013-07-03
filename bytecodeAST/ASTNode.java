@@ -22,22 +22,45 @@ public class ASTNode {
 	
 	protected String ObjectType;
 	protected String name;
+	
+	// Constant Node
 	protected String constantValue;
+	protected String constantType;
+	
 	protected String owner;
 	protected ASTNode fieldValue;
+	
+	// Label Node
+	protected String labelID;
+	protected ASTNode labelConnect;
+	
+	// Return Node
+	protected String returnType;
+	
+	// Function Node
 	protected ArrayList<ASTNode> childMethod;
 	protected String desc;
 	protected List<String> exception;
+	protected ASTNode parentClass;
+	
+	// Class Node
+	protected String supername;
+	protected ArrayList<String> interfaces;
 	
 	//jump node
 	protected String compare;
 	protected String trueLabel;
+	protected ASTNode trueLabelConnect;
 	protected ASTNode firstOperand;
 	protected ASTNode secondOperand;
 	
 	//Arithmetic Node
 	protected String arithmeticOperator;
 	protected String arithmeticType;
+	
+	//Cast Node
+	protected String originalCast;
+	protected String convertedCast;
 	
 	public ASTNode(){
 		this.ASTKind="ASTNode";

@@ -19,6 +19,9 @@ public class ASTJumpNode extends ASTNode{
 	public void setSecondOperand(ASTNode second){
 		this.secondOperand=second;
 	}
+	public void setTrueLabelConnect(ASTNode connect){
+		this.trueLabelConnect=connect;
+	}
 	
 	public String getCompare(){
 		return this.compare;
@@ -31,6 +34,9 @@ public class ASTJumpNode extends ASTNode{
 	}
 	public ASTNode getSecondOperand(){
 		return this.secondOperand;
+	}
+	public ASTNode getTrueLabelConnect(){
+		return this.trueLabelConnect;
 	}
 
 }

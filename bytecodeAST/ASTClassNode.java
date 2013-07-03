@@ -1,64 +1,40 @@
 package bytecodeAST;
 
-import java.util.List;
+import java.util.ArrayList;
 
-import org.objectweb.asm.tree.InnerClassNode;
+public class ASTClassNode extends ASTNode{
 
-public class ASTClassNode extends ASTNode {
-	private String name;
-	private String outerClass;
-	private String outerMethod;
-	private String outerMethodDesc;
-	private String superName;
-	private List<String> interfaces;
-	
-	public ASTClassNode(String kind){
-		super(kind);
-		this.name=null;
-		this.outerClass=null;
-		this.outerMethod=null;
-		this.outerMethodDesc=null;
-		this.superName=null;
-		this.interfaces=null;
+	public ASTClassNode(){
+		super();
+		this.ASTKind="ASTClassNode";
+		this.childMethod=new ArrayList<ASTNode>();
+		this.interfaces=new ArrayList<String>();
 	}
-
-	//Mutator
+	
+	public void setChild(ASTNode child){
+		this.childMethod.add(child);
+	}
 	public void setName(String name){
 		this.name=name;
 	}
-	public void setOuterClass(String outerC){
-		this.outerClass=outerC;
+	public void setSuperName(String supername){
+		this.supername=supername;
 	}
-	public void setOuterMethod(String outerM){
-		this.outerMethod=outerM;
-	}
-	public void setOuterMethodDesc(String outerMD){
-		this.outerMethodDesc=outerMD;
-	}
-	public void setSuperName(String sname){
-		this.superName=sname;
-	}
-	public void setInterfaces(List<String> interfaces){
-		this.interfaces=interfaces;
+	public void addInterface(String inter){
+		this.interfaces.add(inter);
 	}
 	
-	//Accessor
+	public ArrayList<ASTNode> getChild(){
+		return this.childMethod;
+	}
 	public String getName(){
 		return this.name;
 	}
-	public String getOuterClass(){
-		return this.outerClass;
-	}
-	public String getOuterMethod(){
-		return this.outerMethod;
-	} 
-	public String getOuterMethodDesc(){
-		return this.outerMethodDesc;
-	}
 	public String getSuperName(){
-		return this.superName;
+		return this.supername;
 	}
-	public List<String> getInterfaces(){
+	public ArrayList<String> getInterfaces(){
 		return this.interfaces;
 	}
+	
 }

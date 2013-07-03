@@ -23,6 +23,9 @@ public class ASTFunctionNode extends ASTNode{
 	public void setException(List<String> exception){
 		this.exception=exception;
 	}
+	public void setParentClass(ASTNode parent){
+		this.parentClass=parent;
+	}
 	
 	public ArrayList<ASTNode> getChild(){
 		return this.childMethod;
@@ -36,5 +39,7 @@ public class ASTFunctionNode extends ASTNode{
 	public List<String> getException(){
 		return this.exception;
 	}
-	
+	public ASTNode getParentClass(){
+		return this.parentClass;
+	}
 }
