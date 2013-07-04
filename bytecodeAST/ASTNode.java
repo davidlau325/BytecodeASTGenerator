@@ -62,6 +62,22 @@ public class ASTNode {
 	protected String originalCast;
 	protected String convertedCast;
 	
+	//Array Node
+	protected String arrayType;
+	protected ASTNode arraySize;
+	
+	//Array Value Node
+	protected ASTNode valueIndex;
+	protected ASTNode valueNode;
+	protected String valueType;
+	
+	// Switch Node
+	protected int maxValue;
+	protected int minValue;
+	protected ASTLabelNode defaultLabel;
+	protected ArrayList<ASTLabelNode> labels;
+	protected ASTNode checkValue;
+	
 	public ASTNode(){
 		this.ASTKind="ASTNode";
 		this.parameter=new ArrayList<ASTNode>();

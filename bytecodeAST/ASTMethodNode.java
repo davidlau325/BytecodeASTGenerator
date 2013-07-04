@@ -1,7 +1,5 @@
 package bytecodeAST;
 
-import java.util.ArrayList;
-
 public class ASTMethodNode extends ASTNode {
 	
 	public ASTMethodNode(){
@@ -13,7 +11,14 @@ public class ASTMethodNode extends ASTNode {
 		this.name=name;
 	}
 
+	public void setOwner(String owner){
+		this.owner=owner;
+	}
+	
 	public String getName(){
 		return this.name;
+	}
+	public String getOwner(){
+		return this.owner;
 	}
 }
