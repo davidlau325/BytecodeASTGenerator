@@ -7,6 +7,7 @@ public class ASTSwitchNode extends ASTNode{
 		super();
 		this.ASTKind="ASTSwitchNode";
 		this.labels=new ArrayList<ASTLabelNode>();
+		this.compareKeys=new ArrayList<Integer>();
 	}
 	
 	public void setMaxValue(int max){
@@ -24,6 +25,9 @@ public class ASTSwitchNode extends ASTNode{
 	public void addLabel(ASTLabelNode ln){
 		this.labels.add(ln);
 	}
+	public void addKey(Integer key){
+		this.compareKeys.add(key);
+	}
 	
 	public int getMaxValue(){
 		return this.maxValue;
@@ -39,6 +43,9 @@ public class ASTSwitchNode extends ASTNode{
 	}
 	public ArrayList<ASTLabelNode> getLabels(){
 		return this.labels;
+	}
+	public ArrayList<Integer> getKeys(){
+		return this.compareKeys;
 	}
 
 }

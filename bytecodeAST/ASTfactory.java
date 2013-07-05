@@ -21,20 +21,191 @@ public class ASTfactory {
 	public ASTNode getASTNode(){
 		return this.thisAST;
 	}
+	private void loadConstant(String type,String value){
+		ASTConstantNode acn=new ASTConstantNode();
+		acn.setConstantValue(value);
+		acn.setConstantType(type);
+		acn.setCallBy(this.thisAST);
+		this.thisAST.setUsedAsObject(acn);
+		executionStack.push(acn);
+	}
 	
+	private void jumpIfTwoValue(AbstractInsnNode ain,int newLabel,String compare){
+		JumpInsnNode jin=(JumpInsnNode)ain;
+		LabelNode temp=(LabelNode)jin.label;
+		ASTJumpNode ajn=new ASTJumpNode();
+		ASTNode second;
+		if(newLabel==2 && executionStack.isEmpty()){
+			second=currentLabelNode;
+		}else{
+			second=executionStack.pop();
+		}
+		second.setUsedBy(ajn);
+		ajn.setSecondOperand(second);
+		ASTNode first;
+		if(newLabel==2 && executionStack.isEmpty()){
+			first=currentLabelNode;
+		}else{
+			first=executionStack.pop();
+		}
+		first.setUsedBy(ajn);
+		ajn.setFirstOperand(first);
+		ajn.setCompare(compare);
+		ajn.setTrueLabel(temp.getLabel().toString());
+	}
+	
+	private void castValue(int newLabel,String original,String converted){
+		ASTNode cast;
+		if(newLabel==2 && executionStack.isEmpty()){
+			cast=currentLabelNode;
+		}else{
+			cast=executionStack.pop();
+		}
+		ASTCastNode acn=new ASTCastNode();
+		acn.setOriginalCast(original);
+		acn.setConvertedCast(converted);
+		cast.setUsedBy(acn);
+		executionStack.push(acn);
+	}
+	
+	private void loadArithmetic(int newLabel,String operator,String type){
+		ASTNode second;
+		if(newLabel==2 && executionStack.isEmpty()){
+			second=currentLabelNode;
+		}else{
+			second=executionStack.pop();
+		}
+		ASTArithmeticNode aatn=new ASTArithmeticNode();
+		second.setUsedBy(aatn);
+		aatn.setSecondOperant(second);
+		ASTNode first;
+		if(newLabel==2 && executionStack.isEmpty()){
+			first=currentLabelNode;
+		}else{
+			first=executionStack.pop();
+		}
+		aatn.setFirstOperand(first);
+		first.setUsedBy(aatn);
+		aatn.setArithmeticOperator(operator);
+		aatn.setArithmeticType(type);
+		executionStack.push(aatn);
+	}
+	private void singleStore(AbstractInsnNode ain,int newLabel,String type){
+		VarInsnNode vin=(VarInsnNode)ain;
+		ASTLocalVariableNode alvn=new ASTLocalVariableNode();
+		alvn.setIndex(vin.var);
+		alvn.setVariableType(type);
+		this.thisAST.setUsedAsObject(alvn);
+		ASTNode ast;
+		if(newLabel==2 && executionStack.isEmpty()){
+			ast=currentLabelNode;
+		}else{
+			ast=executionStack.pop();
+		}
+		alvn.setVariableValue(ast);
+		ast.setUsedBy(alvn);
+	}
+	private void arrayStore(int newLabel,String type){
+		ASTNode value;
+		ASTNode index;
+		ASTNode array;
+		
+		if(newLabel==2 && executionStack.isEmpty()){
+			value=currentLabelNode;
+		}else{
+			value=executionStack.pop();
+		}
+		if(newLabel==2 && executionStack.isEmpty()){
+			index=currentLabelNode;
+		}else{
+			index=executionStack.pop();
+		}
+		if(newLabel==2 && executionStack.isEmpty()){
+			array=currentLabelNode;
+		}else{
+			array=executionStack.pop();
+		}
+		ASTArrayValueNode aavn=new ASTArrayValueNode();
+		aavn.setValueNode(value);
+		value.setUsedBy(aavn);
+		aavn.setValueIndex(index);
+		index.setUsedBy(aavn);
+		array.setUsedAsObject(aavn);
+		aavn.setUsedBy(array);
+		array.setSignature(type);
+	}
+	private void singleLoad(AbstractInsnNode ain,String type){
+		VarInsnNode vin=(VarInsnNode)ain;
+		ASTLocalVariableNode alvn=new ASTLocalVariableNode();
+		alvn.setIndex(vin.var);
+		alvn.setVariableType(type);
+		this.thisAST.setUsedAsObject(alvn);
+		alvn.setCallBy(this.thisAST);
+		executionStack.push(alvn);
+	}
+	private void arrayLoad(int newLabel,String type){
+		ASTNode index;
+		ASTNode array;
+		if(newLabel==2 & executionStack.isEmpty()){
+			index=currentLabelNode;
+		}else{
+			index=executionStack.pop();
+		}
+		if(newLabel==2 & executionStack.isEmpty()){
+			array=currentLabelNode;
+		}else{
+			array=executionStack.pop();
+		}
+		ASTArrayValueNode aavn=new ASTArrayValueNode();
+		aavn.setValueIndex(index);
+		aavn.setValueType(type);
+		index.setUsedBy(aavn);
+		aavn.setUsedBy(array);
+		array.setUsedAsObject(aavn);
+		executionStack.push(aavn);
+	}
+	private void setReturn(int newLabel,String type){
+		ASTReturnNode arn=new ASTReturnNode();
+		ASTNode ast;
+		if(newLabel==2 && executionStack.isEmpty()){
+			ast=currentLabelNode;
+		}else{
+			ast=executionStack.pop();
+		}
+		ast.setUsedBy(arn);
+		arn.setReturnType(type);
+		arn.setReturnValue(arn);
+	}
+	private void setNeg(int newLabel,String type){
+		ASTNode get;
+		if(newLabel==2 && executionStack.isEmpty()){
+			get=currentLabelNode;
+		}else{
+			get=executionStack.pop();
+		}
+		ASTArithmeticNode aan=new ASTArithmeticNode();
+		aan.setArithmeticOperator("-");
+		aan.setSecondOperant(get);
+		aan.setArithmeticType(type);
+		get.setUsedBy(aan);
+		executionStack.push(aan);
+	}
 	public void generateFunctionAST(MethodNode mn){
 			
 			ASTFunctionNode afn=new ASTFunctionNode();
 			afn.setDesc(mn.desc);
 			afn.setName(mn.name);
 			afn.setSignature(mn.signature);
-			afn.setException(mn.exceptions);
+			for(Object ob:mn.exceptions){
+				afn.setException(ob.toString());
+			}
 			this.thisAST=afn;
 			InsnList insn=mn.instructions;
 			Iterator itr=insn.iterator();
 			int newLabel=0;
 			while(itr.hasNext()){
-				AbstractInsnNode ain=(AbstractInsnNode)itr.next();					
+				AbstractInsnNode ain=(AbstractInsnNode)itr.next();	
+				//System.out.println(ain.getOpcode()+" "+ain.getType()+" size:"+executionStack.size()+" flag:"+newLabel);
 				if(newLabel==1){
 					newLabel=2;
 				}else if(newLabel==2){
@@ -52,205 +223,69 @@ public class ASTfactory {
 					afn.addChild(currentLabelNode);
 					newLabel=1;
 					break;
-					default:break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 1
 				case Opcodes.ACONST_NULL:
-					switch(ain.getType()){
-						case 0:
-							ASTConstantNode acn=new ASTConstantNode();
-							acn.setConstantValue("NULL");
-							acn.setConstantType("NULL");
-							acn.setCallBy(afn);
-							afn.setUsedAsObject(acn);
-							executionStack.push(acn);
-							break;
-						default:break;
-					}
+					{ loadConstant("NULL","NULL");}
 					break;
 				// 2
 				case Opcodes.ICONST_M1:
-					switch(ain.getType()){
-						case 0:
-							ASTConstantNode acn=new ASTConstantNode();
-							acn.setConstantValue("-1");
-							acn.setConstantType("Int");
-							acn.setCallBy(afn);
-							afn.setUsedAsObject(acn);
-							executionStack.push(acn);
-							break;
-						default:break;
-					}
+					{ loadConstant("Int","-1");}
 					break;
 				// 3
 				case Opcodes.ICONST_0:
-					switch(ain.getType()){
-					case 0:
-						ASTConstantNode acn=new ASTConstantNode();
-						acn.setConstantValue("0");
-						acn.setConstantType("Int");
-						acn.setCallBy(afn);
-						afn.setUsedAsObject(acn);
-						executionStack.push(acn);
-						break;
-					default:break;
-					}
+					{ loadConstant("Int","0");}
 					break;
 				// 4
 				case Opcodes.ICONST_1:
-					switch(ain.getType()){
-						case 0:
-							ASTConstantNode acn=new ASTConstantNode();
-							acn.setConstantValue("1");
-							acn.setConstantType("Int");
-							acn.setCallBy(afn);
-							afn.setUsedAsObject(acn);
-							executionStack.push(acn);
-							break;
-						default:break;
-					}
+					{ loadConstant("Int","1");}
 					break;
 				// 5
 				case Opcodes.ICONST_2:
-					switch(ain.getType()){
-						case 0:
-							ASTConstantNode acn=new ASTConstantNode();
-							acn.setConstantValue("2");
-							acn.setConstantType("Int");
-							acn.setCallBy(afn);
-							afn.setUsedAsObject(acn);
-							executionStack.push(acn);
-							break;
-						default:break;
-					}
+					{ loadConstant("Int","2");}
 					break;
 				// 6
 				case Opcodes.ICONST_3:
-					switch(ain.getType()){
-					case 0:
-						ASTConstantNode acn=new ASTConstantNode();
-						acn.setConstantValue("3");
-						acn.setConstantType("Int");
-						acn.setCallBy(afn);
-						afn.setUsedAsObject(acn);
-						executionStack.push(acn);
-						break;
-					default:break;
-					}
+					{ loadConstant("Int","3");}
 					break;
 				// 7
 				case Opcodes.ICONST_4:
-					switch(ain.getType()){
-					case 0:
-						ASTConstantNode acn=new ASTConstantNode();
-						acn.setConstantValue("4");
-						acn.setConstantType("Int");
-						acn.setCallBy(afn);
-						afn.setUsedAsObject(acn);
-						executionStack.push(acn);
-						break;
-					default:break;
-					}
+					{ loadConstant("Int","4");}
 					break;
 				// 8
 				case Opcodes.ICONST_5:
-					switch(ain.getType()){
-						case 0:
-							ASTConstantNode acn=new ASTConstantNode();
-							acn.setConstantValue("5");
-							acn.setConstantType("Int");
-							acn.setCallBy(afn);
-							afn.setUsedAsObject(acn);
-							executionStack.push(acn);
-							break;
-						default:break;
-					}
+					{ loadConstant("Int","5");}
 					break;
 				// 9
 				case Opcodes.LCONST_0:
-					switch(ain.getType()){
-					case 0:
-						ASTConstantNode acn=new ASTConstantNode();
-						acn.setConstantValue("0");
-						acn.setConstantType("Long");
-						acn.setCallBy(afn);
-						afn.setUsedAsObject(acn);
-						executionStack.push(acn);
-						break;
-					default:break;
-					}
-				break;
+					{ loadConstant("Long","0");}
+					break;
 				// 10
 				case Opcodes.LCONST_1:
-					switch(ain.getType()){
-						case 0:
-						ASTConstantNode acn=new ASTConstantNode();
-						acn.setConstantValue("1");
-						acn.setConstantType("Long");
-						acn.setCallBy(afn);
-						afn.setUsedAsObject(acn);
-						executionStack.push(acn);
-						break;
-					default:break;
-					}
+					{loadConstant("Long","1");}
 					break;
 				// 11
 				case Opcodes.FCONST_0:
-					switch(ain.getType()){
-					case 0:
-					ASTConstantNode acn=new ASTConstantNode();
-					acn.setConstantValue("0");
-					acn.setConstantType("Float");
-					acn.setCallBy(afn);
-					afn.setUsedAsObject(acn);
-					executionStack.push(acn);
+					{ loadConstant("Float","0");}
 					break;
-				default:break;
-				}
-				break;
 				// 12
 				case Opcodes.FCONST_1:
-					switch(ain.getType()){
-					case 0:
-					ASTConstantNode acn=new ASTConstantNode();
-					acn.setConstantValue("1");
-					acn.setConstantType("Float");
-					acn.setCallBy(afn);
-					afn.setUsedAsObject(acn);
-					executionStack.push(acn);
+					{ loadConstant("Float","1");}
 					break;
-				default:break;
-				}
-				break;
 				// 13
 				case Opcodes.FCONST_2:
-					switch(ain.getType()){
-					case 0:
-					ASTConstantNode acn=new ASTConstantNode();
-					acn.setConstantValue("1");
-					acn.setConstantType("Float");
-					acn.setCallBy(afn);
-					afn.setUsedAsObject(acn);
-					executionStack.push(acn);
+					{ loadConstant("Float","2");}
 					break;
-				default:break;
-				}
-				break;
+				// 14
+				case Opcodes.DCONST_0:
+					{ loadConstant("Double","0");}
+					break;
 				// 15
 				case Opcodes.DCONST_1:
-					switch(ain.getType()){
-					case 0:
-						ASTConstantNode acn=new ASTConstantNode();
-						acn.setConstantValue("1");
-						acn.setConstantType("Double");
-						acn.setCallBy(afn);
-						afn.setUsedAsObject(acn);
-						executionStack.push(acn);
-						break;
-					default:break;
-					}
-				break;
+					{ loadConstant("Double","1");}
+					break;
 				// 16
 				case Opcodes.BIPUSH:
 					switch(ain.getType()){
@@ -263,7 +298,7 @@ public class ASTfactory {
 							afn.setUsedAsObject(acn);
 							executionStack.push(acn);
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 17
@@ -278,7 +313,7 @@ public class ASTfactory {
 							afn.setUsedAsObject(acn);
 							executionStack.push(acn);
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 18
@@ -291,310 +326,118 @@ public class ASTfactory {
 							acn.setConstantType("String");
 							executionStack.push(acn);
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 21
 				case Opcodes.ILOAD:
-					switch(ain.getType()){
-						case 2:
-							VarInsnNode vin=(VarInsnNode)ain;
-							ASTLocalVariableNode alvn=new ASTLocalVariableNode();
-							alvn.setIndex(vin.var);
-							alvn.setVariableType("Int");
-							afn.setUsedAsObject(alvn);
-							alvn.setCallBy(afn);
-							executionStack.push(alvn);
-							break;
-						default:break;
+					{
+					singleLoad(ain,"Int");
 					}
 					break;
 				// 22
 				case Opcodes.LLOAD:
-					switch(ain.getType()){
-						case 2:
-							VarInsnNode vin=(VarInsnNode)ain;
-							ASTLocalVariableNode alvn=new ASTLocalVariableNode();
-							alvn.setIndex(vin.var);
-							alvn.setVariableType("Long");
-							afn.setUsedAsObject(alvn);
-							alvn.setCallBy(afn);
-							executionStack.push(alvn);
-							break;
-						default:break;
+					{
+					singleLoad(ain,"Long");
 					}
 					break;
 				// 23
 				case Opcodes.FLOAD:
-					switch(ain.getType()){
-					case 2:
-						VarInsnNode vin=(VarInsnNode)ain;
-						ASTLocalVariableNode alvn=new ASTLocalVariableNode();
-						alvn.setIndex(vin.var);
-						alvn.setVariableType("Float");
-						afn.setUsedAsObject(alvn);
-						alvn.setCallBy(afn);
-						executionStack.push(alvn);
-						break;
-					default:break;
-				}
+					{
+					singleLoad(ain,"Float");
+					}
+				break;
+				// 24
+				case Opcodes.DLOAD:
+					{
+					singleLoad(ain,"Double");
+					}
 				break;
 				// 25
 				case Opcodes.ALOAD: 
-					switch(ain.getType()){
-						case 2:
-							VarInsnNode vin=(VarInsnNode)ain;
-							ASTLocalVariableNode alvn=new ASTLocalVariableNode();
-							alvn.setIndex(vin.var);
-							alvn.setVariableType("Object");
-							afn.setUsedAsObject(alvn);
-							alvn.setCallBy(afn);
-							executionStack.push(alvn);
-							break;
-						default:break;
+					{
+					singleLoad(ain,"Object");
 					}
 					break;
 				// 46
 				case Opcodes.IALOAD:
-					switch(ain.getType()){
-					case 0:
-						ASTNode index;
-						ASTNode array;
-						if(newLabel==2 & executionStack.isEmpty()){
-							index=currentLabelNode;
-						}else{
-							index=executionStack.pop();
-						}
-						if(newLabel==2 & executionStack.isEmpty()){
-							array=currentLabelNode;
-						}else{
-							array=executionStack.pop();
-						}
-						ASTArrayValueNode aavn=new ASTArrayValueNode();
-						aavn.setValueIndex(index);
-						aavn.setValueType("Int");
-						index.setUsedBy(aavn);
-						aavn.setUsedBy(array);
-						array.setUsedAsObject(aavn);
-						executionStack.push(aavn);
-						break;
-					default:break;
-				}
-				break;
+					{ arrayLoad(newLabel,"Int");}
+					break;
+				// 48
+				case Opcodes.FALOAD:
+					{ arrayLoad(newLabel,"Float");}
+					break;
 				// 50
 				case Opcodes.AALOAD:
-					switch(ain.getType()){
-						case 0:
-							ASTNode index;
-							ASTNode array;
-							if(newLabel==2 & executionStack.isEmpty()){
-								index=currentLabelNode;
-							}else{
-								index=executionStack.pop();
-							}
-							if(newLabel==2 & executionStack.isEmpty()){
-								array=currentLabelNode;
-							}else{
-								array=executionStack.pop();
-							}
-							ASTArrayValueNode aavn=new ASTArrayValueNode();
-							aavn.setValueIndex(index);
-							aavn.setValueType("Object");
-							index.setUsedBy(aavn);
-							aavn.setUsedBy(array);
-							array.setUsedAsObject(aavn);
-							executionStack.push(aavn);
-							break;
-						default:break;
-					}
+					{ arrayLoad(newLabel,"Object");}
 					break;
 				// 51
 				case Opcodes.BALOAD:
-					switch(ain.getType()){
-						case 0:
-							ASTNode index;
-							ASTNode array;
-							if(newLabel==2 & executionStack.isEmpty()){
-								index=currentLabelNode;
-							}else{
-								index=executionStack.pop();
-							}
-							if(newLabel==2 & executionStack.isEmpty()){
-								array=currentLabelNode;
-							}else{
-								array=executionStack.pop();
-							}
-							ASTArrayValueNode aavn=new ASTArrayValueNode();
-							aavn.setValueIndex(index);
-							aavn.setValueType("Byte");
-							index.setUsedBy(aavn);
-							aavn.setUsedBy(array);
-							array.setUsedAsObject(aavn);
-							executionStack.push(aavn);
-							break;
-						default:break;
-					}
+					{ arrayLoad(newLabel,"Byte");}
+					break;
+				// 52
+				case Opcodes.CALOAD:
+					{ arrayLoad(newLabel,"Char");}
 					break;
 				// 54
 				case Opcodes.ISTORE:
-					switch(ain.getType()){
-						case 2:
-							VarInsnNode vin=(VarInsnNode)ain;
-							ASTLocalVariableNode alvn=new ASTLocalVariableNode();
-							alvn.setIndex(vin.var);
-							alvn.setVariableType("Int");
-							afn.setUsedAsObject(alvn);
-							ASTNode ast;
-							if(newLabel==2 && executionStack.isEmpty()){
-							ast=currentLabelNode;	
-							}else{
-							ast=executionStack.pop();
-							}
-							alvn.setVariableValue(ast);
-							ast.setUsedBy(alvn);
-							break;
-						default:break;
-					}
+					{ singleStore(ain,newLabel,"Int");}
 					break;
 				// 55
 				case Opcodes.LSTORE:
-					switch(ain.getType()){
-						case 2:
-							VarInsnNode vin=(VarInsnNode)ain;
-							ASTLocalVariableNode alvn=new ASTLocalVariableNode();
-							alvn.setIndex(vin.var);
-							alvn.setVariableType("Long");
-							afn.setUsedAsObject(alvn);
-							ASTNode ast;
-							if(newLabel==2 && executionStack.isEmpty()){
-								ast=currentLabelNode;
-							}else{
-								ast=executionStack.pop();
-							}
-							alvn.setVariableValue(ast);
-							ast.setUsedBy(alvn);
-						break;	
-						default:break;
-					}
+					{ singleStore(ain,newLabel,"Long");}
 					break;
 				// 56
 				case Opcodes.FSTORE:
-					switch(ain.getType()){
-					case 2:
-						VarInsnNode vin=(VarInsnNode)ain;
-						ASTLocalVariableNode alvn=new ASTLocalVariableNode();
-						alvn.setIndex(vin.var);
-						alvn.setVariableType("Float");
-						afn.setUsedAsObject(alvn);
-						ASTNode ast;
-						if(newLabel==2 && executionStack.isEmpty()){
-							ast=currentLabelNode;
-						}else{
-							ast=executionStack.pop();
-						}
-						alvn.setVariableValue(ast);
-						ast.setUsedBy(alvn);
-					break;	
-					default:break;
-					}
+					{ singleStore(ain,newLabel,"Float");}
+					break;
+				// 57
+				case Opcodes.DSTORE:
+					{ singleStore(ain,newLabel,"Double");}
 					break;
 				// 58
 				case Opcodes.ASTORE:
-					switch(ain.getType()){
-						case 2:
-							VarInsnNode vin=(VarInsnNode)ain;
-							ASTLocalVariableNode alvn=new ASTLocalVariableNode();
-							alvn.setIndex(vin.var);
-							alvn.setVariableType("Object");
-							afn.setUsedAsObject(alvn);
-							ASTNode ast;
-							if(newLabel==2 && executionStack.isEmpty()){
-								ast=currentLabelNode;
-							}else{
-								ast=executionStack.pop();
-							}
-							alvn.setVariableValue(ast);
-							ast.setUsedBy(alvn);
-						break;	
-						default:break;
-					}
+					{ singleStore(ain,newLabel,"Object");}
 					break;
 				// 79
 				case Opcodes.IASTORE:
-					switch(ain.getType()){
-					case 0:
-						ASTNode value;
-						ASTNode index;
-						ASTNode array;
-						
-						if(newLabel==2 && executionStack.isEmpty()){
-							value=currentLabelNode;
-						}else{
-							value=executionStack.pop();
-						}
-						if(newLabel==2 && executionStack.isEmpty()){
-							index=currentLabelNode;
-						}else{
-							index=executionStack.pop();
-						}
-						if(newLabel==2 && executionStack.isEmpty()){
-							array=currentLabelNode;
-						}else{
-							array=executionStack.pop();
-						}
-						ASTArrayValueNode aavn=new ASTArrayValueNode();
-						aavn.setValueNode(value);
-						value.setUsedBy(aavn);
-						aavn.setValueIndex(index);
-						index.setUsedBy(aavn);
-						array.setUsedAsObject(aavn);
-						aavn.setUsedBy(array);
-						array.setSignature("Int Array");
-						break;
-					default:break;
-					}
+					{ arrayStore(newLabel,"Int Array");}
+					break;
+				// 81
+				case Opcodes.FASTORE:
+					{ arrayStore(newLabel,"Float Array");}
 					break;
 				// 83
 				case Opcodes.AASTORE:
-					switch(ain.getType()){
-					case 0:
-						ASTNode value;
-						ASTNode index;
-						ASTNode array;
-						
-						if(newLabel==2 && executionStack.isEmpty()){
-							value=currentLabelNode;
-						}else{
-							value=executionStack.pop();
-						}
-						if(newLabel==2 && executionStack.isEmpty()){
-							index=currentLabelNode;
-						}else{
-							index=executionStack.pop();
-						}
-						if(newLabel==2 && executionStack.isEmpty()){
-							array=currentLabelNode;
-						}else{
-							array=executionStack.pop();
-						}
-						ASTArrayValueNode aavn=new ASTArrayValueNode();
-						aavn.setValueNode(value);
-						value.setUsedBy(aavn);
-						aavn.setValueIndex(index);
-						index.setUsedBy(aavn);
-						array.setUsedAsObject(aavn);
-						aavn.setUsedBy(array);
-						array.setSignature("Object Array");
-						break;
-					default:break;
+					{
+					arrayStore(newLabel,"Object Array");
 					}
 					break;
+				//84
+				case Opcodes.BASTORE:
+					{
+					arrayStore(newLabel,"Byte Array");
+					}
+				break;
+				// 85
+				case Opcodes.CASTORE:
+					{ arrayStore(newLabel,"Char Array");}
+				break;
 				// 87
 				case Opcodes.POP:
 					if(newLabel==2 && executionStack.isEmpty()){
 						
 					}else{
 					executionStack.pop();
+					}
+					break;
+				// 88
+				case Opcodes.POP2:
+					if(newLabel==2 && executionStack.isEmpty()){}else{
+						executionStack.pop();
+					}
+					if(executionStack.isEmpty()){}else{
+						executionStack.pop();
 					}
 					break;
 				// 89
@@ -611,523 +454,279 @@ public class ASTfactory {
 							executionStack.push(dup);
 							executionStack.push(get);
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 96
 				case Opcodes.IADD:
 					switch(ain.getType()){
 						case 0:
-							ASTArithmeticNode aatn=new ASTArithmeticNode();
-							ASTNode second;
-							if(newLabel==2 && executionStack.isEmpty()){
-								second=currentLabelNode;
-							}else{
-								second=executionStack.pop();
-							}
-							second.setUsedBy(aatn);
-							aatn.setSecondOperant(second);
-							ASTNode first;
-							if(newLabel==2 && executionStack.isEmpty()){
-								first=currentLabelNode;
-							}else{
-								first=executionStack.pop();
-							}
-							first.setUsedBy(aatn);
-							aatn.setFirstOperand(first);
-							aatn.setArithmeticOperator("+");
-							aatn.setArithmeticType("Int");
-							executionStack.push(aatn);
+							loadArithmetic(newLabel,"+","Int");
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 97
 				case Opcodes.LADD:
 					switch(ain.getType()){
 						case 0:
-							ASTArithmeticNode aatn=new ASTArithmeticNode();
-							ASTNode second;
-							if(newLabel==2 && executionStack.isEmpty()){
-								second=currentLabelNode;
-							}else{
-								second=executionStack.pop();
-							}
-							second.setUsedBy(aatn);
-							aatn.setSecondOperant(second);
-							ASTNode first;
-							if(newLabel==2 && executionStack.isEmpty()){
-								first=currentLabelNode;
-							}else{
-								first=executionStack.pop();
-							}
-							first.setUsedBy(aatn);
-							aatn.setFirstOperand(first);
-							aatn.setArithmeticOperator("+");
-							aatn.setArithmeticType("Long");
-							executionStack.push(aatn);
+							loadArithmetic(newLabel,"+","Long");
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
+					break;
+				// 98
+				case Opcodes.FADD:
+					{
+						loadArithmetic(newLabel,"+","Float");
+					}
+					break;
+				// 99
+				case Opcodes.DADD:
+					{ loadArithmetic(newLabel,"+","Double");}
 					break;
 				// 100
 				case Opcodes.ISUB:
 					switch(ain.getType()){
 						case 0:
-							ASTNode second;
-							if(newLabel==2 && executionStack.isEmpty()){
-								second=currentLabelNode;
-							}else{
-								second=executionStack.pop();
-							}
-							ASTArithmeticNode aatn=new ASTArithmeticNode();
-							second.setUsedBy(aatn);
-							aatn.setSecondOperant(second);
-							ASTNode first;
-							if(newLabel==2 && executionStack.isEmpty()){
-								first=currentLabelNode;
-							}else{
-								first=executionStack.pop();
-							}
-							aatn.setFirstOperand(first);
-							aatn.setArithmeticType("Int");
-							first.setUsedBy(aatn);
-							aatn.setArithmeticOperator("-");
-							
-							executionStack.push(aatn);
+							loadArithmetic(newLabel,"-","Int");
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 101
 				case Opcodes.LSUB:
 					switch(ain.getType()){
 						case 0:
-							ASTNode second;
-							if(newLabel==2 && executionStack.isEmpty()){
-								second=currentLabelNode;
-							}else{
-								second=executionStack.pop();
-							}
-							ASTArithmeticNode aatn=new ASTArithmeticNode();
-							second.setUsedBy(aatn);
-							aatn.setSecondOperant(second);
-							ASTNode first;
-							if(newLabel==2 && executionStack.isEmpty()){
-								first=currentLabelNode;
-							}else{
-								first=executionStack.pop();
-							}
-							aatn.setFirstOperand(first);
-							first.setUsedBy(aatn);
-							aatn.setArithmeticOperator("-");
-							aatn.setArithmeticType("Long");
-							
-							executionStack.push(aatn);
+							loadArithmetic(newLabel,"-","Long");
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
+					break;
+				// 102
+				case Opcodes.FSUB:
+					{
+						loadArithmetic(newLabel,"-","Float");
+					}
+					break;
+				// 103
+				case Opcodes.DSUB:
+					{ loadArithmetic(newLabel,"-","Double");}
 					break;
 				// 104
 				case Opcodes.IMUL:
 					switch(ain.getType()){
 						case 0:
-						ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						ASTArithmeticNode aatn=new ASTArithmeticNode();
-						second.setUsedBy(aatn);
-						aatn.setSecondOperant(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-							first=executionStack.pop();
-						}
-						aatn.setFirstOperand(first);
-						first.setUsedBy(aatn);
-						aatn.setArithmeticOperator("*");
-						aatn.setArithmeticType("Int");
-						
-						executionStack.push(aatn);
+							loadArithmetic(newLabel,"*","Int");
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 105
 				case Opcodes.LMUL:
 					switch(ain.getType()){
 					case 0:
-						ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						ASTArithmeticNode aatn=new ASTArithmeticNode();
-						second.setUsedBy(aatn);
-						aatn.setSecondOperant(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-						first=executionStack.pop();
-						}
-						aatn.setFirstOperand(first);
-						first.setUsedBy(aatn);
-						aatn.setArithmeticOperator("*");
-						aatn.setArithmeticType("Long");
-						executionStack.push(aatn);
+						loadArithmetic(newLabel,"*","Long");
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 106
 				case Opcodes.FMUL:
 					switch(ain.getType()){
 					case 0:
-						ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						ASTArithmeticNode aatn=new ASTArithmeticNode();
-						second.setUsedBy(aatn);
-						aatn.setSecondOperant(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-						first=executionStack.pop();
-						}
-						aatn.setFirstOperand(first);
-						first.setUsedBy(aatn);
-						aatn.setArithmeticOperator("*");
-						aatn.setArithmeticType("Float");
-						executionStack.push(aatn);
+						loadArithmetic(newLabel,"*","Float");
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 107
 				case Opcodes.DMUL:
 					switch(ain.getType()){
 					case 0:
-						ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						ASTArithmeticNode aatn=new ASTArithmeticNode();
-						second.setUsedBy(aatn);
-						aatn.setSecondOperant(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-						first=executionStack.pop();
-						}
-						aatn.setFirstOperand(first);
-						first.setUsedBy(aatn);
-						aatn.setArithmeticOperator("*");
-						aatn.setArithmeticType("Double");
-						executionStack.push(aatn);
+						loadArithmetic(newLabel,"*","Double");
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 108
 				case Opcodes.IDIV:
 					switch(ain.getType()){
 						case 0:
-						ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						ASTArithmeticNode aatn=new ASTArithmeticNode();
-						second.setUsedBy(aatn);
-						aatn.setSecondOperant(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-							first=executionStack.pop();
-						}
-						aatn.setFirstOperand(first);
-						first.setUsedBy(aatn);
-						aatn.setArithmeticOperator("/");
-						aatn.setArithmeticType("Int");
-						
-						executionStack.push(aatn);
+						loadArithmetic(newLabel,"/","Int");
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 109
 				case Opcodes.LDIV:
 					switch(ain.getType()){
 					case 0:
-					ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						ASTArithmeticNode aatn=new ASTArithmeticNode();
-						second.setUsedBy(aatn);
-						aatn.setSecondOperant(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-							first=executionStack.pop();
-						}
-						aatn.setFirstOperand(first);
-						first.setUsedBy(aatn);
-						aatn.setArithmeticOperator("/");
-						aatn.setArithmeticType("Long");
-						executionStack.push(aatn);
+						loadArithmetic(newLabel,"/","Long");
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
+					}
+					break;
+				// 110
+				case Opcodes.FDIV:
+					switch(ain.getType()){
+					case 0:
+						loadArithmetic(newLabel,"/","Float");
+						break;
+					default:break;
 					}
 					break;
 				// 111
 				case Opcodes.DDIV:
 					switch(ain.getType()){
 					case 0:
-					ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						ASTArithmeticNode aatn=new ASTArithmeticNode();
-						second.setUsedBy(aatn);
-						aatn.setSecondOperant(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-							first=executionStack.pop();
-						}
-						aatn.setFirstOperand(first);
-						first.setUsedBy(aatn);
-						aatn.setArithmeticOperator("/");
-						aatn.setArithmeticType("Double");
-						executionStack.push(aatn);
+						loadArithmetic(newLabel,"/","Double");
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 				break;
 				// 112
 				case Opcodes.IREM:
 					switch(ain.getType()){
 					case 0:
-						ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						ASTArithmeticNode aatn=new ASTArithmeticNode();
-						second.setUsedBy(aatn);
-						aatn.setSecondOperant(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-							first=executionStack.pop();
-						}
-						aatn.setFirstOperand(first);
-						first.setUsedBy(aatn);
-						aatn.setArithmeticOperator("%");
-						aatn.setArithmeticType("Int");
-					
-						executionStack.push(aatn);
+						loadArithmetic(newLabel,"%","Int");
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
+					break;
+				// 116
+				case Opcodes.INEG:
+					{ setNeg(newLabel,"Int");}
+					break;
+				// 117
+				case Opcodes.LNEG:
+					{ setNeg(newLabel,"Long");}
+					break;
+				// 118
+				case Opcodes.FNEG:
+					{ setNeg(newLabel,"Float");}
+					break;
+				// 120
+				case Opcodes.ISHL:
+					{ loadArithmetic(newLabel,"<<","Int");}
+					break;
+				// 121
+				case Opcodes.LSHL:
+					{ loadArithmetic(newLabel,"<<","Long");}
+					break;
+				// 122
+				case Opcodes.ISHR:
+					{
+					loadArithmetic(newLabel,">>","Int");
+					}
+					break;
+				// 124
+				case Opcodes.IUSHR:
+					{ loadArithmetic(newLabel,">>>","int");}
 					break;
 				// 126
 				case Opcodes.IAND:
-					switch(ain.getType()){
-					case 0:
-						ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						ASTArithmeticNode aatn=new ASTArithmeticNode();
-						second.setUsedBy(aatn);
-						aatn.setSecondOperant(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-							first=executionStack.pop();
-						}
-						aatn.setFirstOperand(first);
-						first.setUsedBy(aatn);
-						aatn.setArithmeticOperator("&&");
-						aatn.setArithmeticType("Int");
-						executionStack.push(aatn);
-						break;
-						default:break;
-					}
+					{ loadArithmetic(newLabel,"&&","Int");}
 					break;
+				// 127
+				case Opcodes.LAND:
+					{ loadArithmetic(newLabel,"&&","Long");}
+					break;
+				// 128
+				case Opcodes.IOR:
+					{ loadArithmetic(newLabel,"|","Int");}
+					break;
+				// 129
+				case Opcodes.LOR:
+					{ loadArithmetic(newLabel,"|","Long");}
+					break;
+				// 130
+				case Opcodes.IXOR:
+					{
+					loadArithmetic(newLabel,"^","Int");
+					}
+				break;
 				// 132
 				case Opcodes.IINC:
 					//Integer increment, no stack operation, ignore
 					break;
 				// 133
 				case Opcodes.I2L:
-					switch(ain.getType()){
-						case 0:
-						ASTNode cast;
-						if(newLabel==2 && executionStack.isEmpty()){
-							cast=currentLabelNode;
-						}else{
-							cast=executionStack.pop();
-						}
-						ASTCastNode acn=new ASTCastNode();
-						acn.setOriginalCast("Int");
-						acn.setConvertedCast("Long");
-						cast.setUsedBy(acn);
-						executionStack.push(acn);
-						break;
-						default:break;
-					}
+					{ castValue(newLabel,"Int","Long");}
 					break;
 				// 134
 				case Opcodes.I2F:
-					switch(ain.getType()){
-					case 0:
-					ASTNode cast;
-					if(newLabel==2 && executionStack.isEmpty()){
-						cast=currentLabelNode;
-					}else{
-						cast=executionStack.pop();
-					}
-					ASTCastNode acn=new ASTCastNode();
-					acn.setOriginalCast("Int");
-					acn.setConvertedCast("Float");
-					cast.setUsedBy(acn);
-					executionStack.push(acn);
-					break;
-					default:break;
-					}
+					{ castValue(newLabel,"Int","Float");}
 					break;
 				// 135
 				case Opcodes.I2D:
-					switch(ain.getType()){
-					case 0:
-						ASTNode cast;
-						if(newLabel==2 && executionStack.isEmpty()){
-							cast=currentLabelNode;
-						}else{
-							cast=executionStack.pop();
-						}
-						ASTCastNode acn=new ASTCastNode();
-						acn.setOriginalCast("Int");
-						acn.setConvertedCast("Double");
-						cast.setUsedBy(acn);
-						executionStack.push(acn);
-						break;
-					default:break;
-					}
+					{ castValue(newLabel,"Int","Double");}
 					break;
 				// 136
 				case Opcodes.L2I:
-					switch(ain.getType()){
-						case 0:
-							ASTNode cast;
-							if(newLabel==2 && executionStack.isEmpty()){
-								cast=currentLabelNode;
-							}else{
-								cast=executionStack.pop();
-							}
-							ASTCastNode acn=new ASTCastNode();
-							acn.setOriginalCast("Long");
-							acn.setConvertedCast("Int");
-							cast.setUsedBy(acn);
-							executionStack.push(acn);
-						break;
-						default:break;
-					}
+					{ castValue(newLabel,"Long","Int");}
+					break;
+				// 137
+				case Opcodes.L2F:
+					{ castValue(newLabel,"Long","Float");}
 					break;
 				// 139
 				case Opcodes.F2I:
-					switch(ain.getType()){
-					case 0:
-						ASTNode cast;
-						if(newLabel==2 && executionStack.isEmpty()){
-							cast=currentLabelNode;
-						}else{
-							cast=executionStack.pop();
-						}
-						ASTCastNode acn=new ASTCastNode();
-						acn.setOriginalCast("Float");
-						acn.setConvertedCast("Int");
-						cast.setUsedBy(acn);
-						executionStack.push(acn);
-						break;
-						default:break;
-					}
+					{ castValue(newLabel,"Float","Int");}
 					break;
+				// 140
+				case Opcodes.F2L:
+					{ castValue(newLabel,"Float","Long");}
+					break;
+				// 141
+				case Opcodes.F2D:
+					{ castValue(newLabel,"Float","Double");}
+				break;
 				// 142
 				case Opcodes.D2I:
-					switch(ain.getType()){
-					case 0:
-						ASTNode cast;
-						if(newLabel==2 && executionStack.isEmpty()){
-							cast=currentLabelNode;
-						}else{
-							cast=executionStack.pop();
-						}
-						ASTCastNode acn=new ASTCastNode();
-						acn.setOriginalCast("Double");
-						acn.setConvertedCast("Int");
-						cast.setUsedBy(acn);
-						executionStack.push(acn);
-						break;
-						default:break;
+					{ castValue(newLabel,"Double","Int");}
+					break;
+				// 144
+				case Opcodes.D2F:
+					{ castValue(newLabel,"Double","Float");}
+					break;
+				// 145
+				case Opcodes.I2B:
+					{
+					castValue(newLabel,"Int","Byte");
 					}
 					break;
+				// 146
+				case Opcodes.I2C:
+					{
+					castValue(newLabel,"Int","Char");
+					}
+				break;
 				// 148
 				case Opcodes.LCMP:
-					switch(ain.getType()){
-					case 0:
-						ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						ASTArithmeticNode aatn=new ASTArithmeticNode();
-						second.setUsedBy(aatn);
-						aatn.setSecondOperant(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-							first=executionStack.pop();
-						}
-						aatn.setFirstOperand(first);
-						first.setUsedBy(aatn);
-						aatn.setArithmeticOperator("==");
-						aatn.setArithmeticType("Long");
-						executionStack.push(aatn);
-						break;
-						default:break;
+					{
+					loadArithmetic(newLabel,"==","Long");
 					}
+					break;
+				// 149
+				case Opcodes.FCMPL:
+					{
+						loadArithmetic(newLabel,"==","Float");
+					}
+					break;
+				// 150
+				case Opcodes.FCMPG:
+					{
+						loadArithmetic(newLabel,"==","Float");
+					}
+					break;
+				// 151
+				case Opcodes.DCMPL:
+					{ loadArithmetic(newLabel,"==","Double");}
+					break;
+				// 152
+				case Opcodes.DCMPG:
+					{ loadArithmetic(newLabel,"==","Double");}
 					break;
 				// 153
 				case Opcodes.IFEQ:
@@ -1152,7 +751,7 @@ public class ASTfactory {
 							ajn.setCompare("==");
 							ajn.setTrueLabel(temp.getLabel().toString());
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 154
@@ -1178,7 +777,7 @@ public class ASTfactory {
 							ajn.setCompare("!=");
 							ajn.setTrueLabel(temp.getLabel().toString());
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 155
@@ -1204,7 +803,7 @@ public class ASTfactory {
 					ajn.setCompare("<");
 					ajn.setTrueLabel(temp.getLabel().toString());
 					break;
-					default:break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 156
@@ -1230,7 +829,7 @@ public class ASTfactory {
 						ajn.setCompare(">=");
 						ajn.setTrueLabel(temp.getLabel().toString());
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 157
@@ -1256,7 +855,7 @@ public class ASTfactory {
 							ajn.setCompare(">");
 							ajn.setTrueLabel(temp.getLabel().toString());
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 158
@@ -1282,215 +881,79 @@ public class ASTfactory {
 							ajn.setCompare("<=");
 							ajn.setTrueLabel(temp.getLabel().toString());
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 159
 				case Opcodes.IF_ICMPEQ:
 					switch(ain.getType()){
 						case 7:
-							JumpInsnNode jin=(JumpInsnNode)ain;
-							LabelNode temp=(LabelNode)jin.label;
-							ASTJumpNode ajn=new ASTJumpNode();
-							ASTNode second;
-							if(newLabel==2 && executionStack.isEmpty()){
-								second=currentLabelNode;
-							}else{
-								second=executionStack.pop();
-							}
-							second.setUsedBy(ajn);
-							ajn.setSecondOperand(second);
-							ASTNode first;
-							if(newLabel==2 && executionStack.isEmpty()){
-								first=currentLabelNode;
-							}else{
-								first=executionStack.pop();
-							}
-							first.setUsedBy(ajn);
-							ajn.setFirstOperand(first);
-							ajn.setCompare("==");
-							ajn.setTrueLabel(temp.getLabel().toString());
+							jumpIfTwoValue(ain,newLabel,"==");
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 160
 				case Opcodes.IF_ICMPNE:
 					switch(ain.getType()){
 						case 7:
-							JumpInsnNode jin=(JumpInsnNode)ain;
-							LabelNode temp=(LabelNode)jin.label;
-							ASTJumpNode ajn=new ASTJumpNode();
-							ASTNode second;
-							if(newLabel==2 && executionStack.isEmpty()){
-								second=currentLabelNode;
-							}else{
-								second=executionStack.pop();
-							}
-							second.setUsedBy(ajn);
-							ajn.setSecondOperand(second);
-							ASTNode first;
-							if(newLabel==2 && executionStack.isEmpty()){
-								first=currentLabelNode;
-							}else{
-								first=executionStack.pop();
-							}
-							first.setUsedBy(ajn);
-							ajn.setFirstOperand(first);
-							ajn.setCompare("!=");
-							ajn.setTrueLabel(temp.getLabel().toString());
-							
+							jumpIfTwoValue(ain,newLabel,"!=");
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 161
 				case Opcodes.IF_ICMPLT:
 					switch(ain.getType()){
 						case 7:
-							JumpInsnNode jin=(JumpInsnNode)ain;
-							LabelNode temp=(LabelNode)jin.label;
-							ASTJumpNode ajn=new ASTJumpNode();
-							ASTNode second;
-							if(newLabel==2 && executionStack.isEmpty()){
-								second=currentLabelNode;
-							}else{
-								second=executionStack.pop();
-							}
-							second.setUsedBy(ajn);
-							ajn.setSecondOperand(second);
-							ASTNode first;
-							if(newLabel==2 && executionStack.isEmpty()){
-								first=currentLabelNode;
-							}else{
-								first=executionStack.pop();
-							}
-							first.setUsedBy(ajn);
-							ajn.setFirstOperand(first);
-							ajn.setCompare("<");
-							ajn.setTrueLabel(temp.getLabel().toString());
+							jumpIfTwoValue(ain,newLabel,"<");
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 162
 				case Opcodes.IF_ICMPGE:
 					switch(ain.getType()){
 						case 7:
-							JumpInsnNode jin=(JumpInsnNode)ain;
-							LabelNode temp=(LabelNode)jin.label;
-							ASTJumpNode ajn=new ASTJumpNode();
-							ASTNode second;
-							if(newLabel==2 && executionStack.isEmpty()){
-								second=currentLabelNode;
-							}else{
-								second=executionStack.pop();
-							}
-							second.setUsedBy(ajn);
-							ajn.setSecondOperand(second);
-							ASTNode first;
-							if(newLabel==2 && executionStack.isEmpty()){
-								first=currentLabelNode;
-							}else{
-								first=executionStack.pop();
-							}
-							first.setUsedBy(ajn);
-							ajn.setFirstOperand(first);
-							ajn.setCompare(">=");
-							ajn.setTrueLabel(temp.getLabel().toString());
-						
+							jumpIfTwoValue(ain,newLabel,">=");
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
+					}
+					break;
+				// 163
+				case Opcodes.IF_ICMPGT:
+					switch(ain.getType()){
+						case 7:
+							jumpIfTwoValue(ain,newLabel,">");
+						break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 164
 				case Opcodes.IF_ICMPLE:
 					switch(ain.getType()){
 						case 7:
-							JumpInsnNode jin=(JumpInsnNode)ain;
-							LabelNode temp=(LabelNode)jin.label;
-							ASTJumpNode ajn=new ASTJumpNode();
-							ASTNode second;
-							if(newLabel==2 && executionStack.isEmpty()){
-								second=currentLabelNode;
-							}else{
-								second=executionStack.pop();
-							}
-							second.setUsedBy(ajn);
-							ajn.setSecondOperand(second);
-							ASTNode first;
-							if(newLabel==2 && executionStack.isEmpty()){
-								first=currentLabelNode;
-							}else{
-								first=executionStack.pop();
-							}
-							first.setUsedBy(ajn);
-							ajn.setFirstOperand(first);
-							ajn.setCompare("<=");
-							ajn.setTrueLabel(temp.getLabel().toString());
-						
+							jumpIfTwoValue(ain,newLabel,"<=");
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 165
 				case Opcodes.IF_ACMPEQ:
 					switch(ain.getType()){
 					case 7:
-						JumpInsnNode jin=(JumpInsnNode)ain;
-						LabelNode temp=(LabelNode)jin.label;
-						ASTJumpNode ajn=new ASTJumpNode();
-						ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						second.setUsedBy(ajn);
-						ajn.setSecondOperand(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-							first=executionStack.pop();
-						}
-						first.setUsedBy(ajn);
-						ajn.setFirstOperand(first);
-						ajn.setCompare("==");
-						ajn.setTrueLabel(temp.getLabel().toString());
-					
+						jumpIfTwoValue(ain,newLabel,"==");
 						break;
-					default:break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 				}
 				break;
 				// 166
 				case Opcodes.IF_ACMPNE:
 					switch(ain.getType()){
 					case 7:
-						JumpInsnNode jin=(JumpInsnNode)ain;
-						LabelNode temp=(LabelNode)jin.label;
-						ASTJumpNode ajn=new ASTJumpNode();
-						ASTNode second;
-						if(newLabel==2 && executionStack.isEmpty()){
-							second=currentLabelNode;
-						}else{
-							second=executionStack.pop();
-						}
-						second.setUsedBy(ajn);
-						ajn.setSecondOperand(second);
-						ASTNode first;
-						if(newLabel==2 && executionStack.isEmpty()){
-							first=currentLabelNode;
-						}else{
-							first=executionStack.pop();
-						}
-						first.setUsedBy(ajn);
-						ajn.setFirstOperand(first);
-						ajn.setCompare("!=");
-						ajn.setTrueLabel(temp.getLabel().toString());
-					
+						jumpIfTwoValue(ain,newLabel,"!=");
 						break;
-					default:break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 				}
 				break;
 				// 167
@@ -1522,90 +985,70 @@ public class ASTfactory {
 						}else{
 							check=executionStack.pop();
 						}
+						check.setUsedBy(asn);
 						asn.setCheckValue(check);
 						executionStack.push(asn);
 						break;
-					default:break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
+					}
+					break;
+				// 171
+				case Opcodes.LOOKUPSWITCH:
+					{
+						LookupSwitchInsnNode tsin=(LookupSwitchInsnNode)ain;
+						ASTSwitchNode asn=new ASTSwitchNode();
+						ASTLabelNode aln=new ASTLabelNode();
+						aln.setLabel(tsin.dflt.getLabel().toString());
+						aln.setUsedBy(asn);
+						asn.setDefaultLabel(aln);
+						for(Object ob:tsin.labels){
+							LabelNode ln=(LabelNode)ob;
+							ASTLabelNode tempALN=new ASTLabelNode();
+							tempALN.setLabel(ln.getLabel().toString());
+							tempALN.setUsedBy(asn);
+							asn.addLabel(tempALN);
+						}
+						for(Object ob:tsin.keys){
+							Integer key=(Integer)ob;
+							asn.addKey(key);
+						}
+						ASTNode check;
+						if(newLabel==2 && executionStack.isEmpty()){
+							check=currentLabelNode;
+						}else{
+							check=executionStack.pop();
+						}
+						check.setUsedBy(asn);
+						asn.setCheckValue(check);
+						executionStack.push(asn);
 					}
 					break;
 				// 172
 				case Opcodes.IRETURN:
-					switch(ain.getType()){
-						case 0:
-							ASTReturnNode arn=new ASTReturnNode();
-							ASTNode ast;
-							if(newLabel==2 && executionStack.isEmpty()){
-								ast=currentLabelNode;
-							}else{
-								ast=executionStack.pop();
-							}
-							ast.setUsedBy(arn);
-							arn.setReturnType("Int");
-							arn.setReturnValue(arn);
-							break;
-						default:break;
-					}
+					{setReturn(newLabel,"Int");}
 					break;
 				// 173
 				case Opcodes.LRETURN:
-					switch(ain.getType()){
-					case 0:
-						ASTReturnNode arn=new ASTReturnNode();
-						ASTNode ast;
-						if(newLabel==2 && executionStack.isEmpty()){
-							ast=currentLabelNode;
-						}else{
-							ast=executionStack.pop();
-						}
-						ast.setUsedBy(arn);
-						arn.setReturnType("Long");
-						arn.setReturnValue(arn);
-						break;
-						default:break;
-					}
+					{setReturn(newLabel,"Long");}
 					break;
 				// 174
 				case Opcodes.FRETURN:
-					switch(ain.getType()){
-					case 0:
-						ASTReturnNode arn=new ASTReturnNode();
-						ASTNode ast;
-						if(newLabel==2 && executionStack.isEmpty()){
-							ast=currentLabelNode;
-						}else{
-							ast=executionStack.pop();
-						}
-						ast.setUsedBy(arn);
-						arn.setReturnType("Float");
-						arn.setReturnValue(arn);
-						break;
-						default:break;
-					}
+					{setReturn(newLabel,"Float");}
+					break;
+				// 175
+				case Opcodes.DRETURN:
+					{setReturn(newLabel,"Double");}
 					break;
 				// 176
 				case Opcodes.ARETURN:
-					switch(ain.getType()){
-						case 0:
-							ASTReturnNode arn=new ASTReturnNode();
-							ASTNode ast;
-							if(newLabel==2 && executionStack.isEmpty()){
-								ast=currentLabelNode;
-							}else{
-								ast=executionStack.pop();
-							}
-							ast.setUsedBy(arn);
-							arn.setReturnType("Object");
-							arn.setReturnValue(arn);
-							break;
-						default:break;
-					}
+					{setReturn(newLabel,"Object");}
 					break;
 				// 177
 				case Opcodes.RETURN:
 					switch(ain.getType()){
 					// just return empty to end the function, ignore
 						case 0:break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 178
@@ -1623,7 +1066,7 @@ public class ASTfactory {
 						
 						executionStack.push(fien);		
 						break;
-					default:break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 179
@@ -1647,7 +1090,7 @@ public class ASTfactory {
 						
 						afn.addChild(fien);
 						break;
-					default:break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 180
@@ -1670,7 +1113,7 @@ public class ASTfactory {
 							
 							executionStack.push(fien);		
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 181
@@ -1701,7 +1144,7 @@ public class ASTfactory {
 							
 							afn.addChild(fien);
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 182
@@ -1743,7 +1186,7 @@ public class ASTfactory {
 							
 							afn.addChild(amn);
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 183
@@ -1786,7 +1229,7 @@ public class ASTfactory {
 							afn.addChild(amn);
 							
 							break;
-						default:break;	
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;	
 					}
 					break;
 				// 184
@@ -1864,7 +1307,7 @@ public class ASTfactory {
 							afn.addChild(amn);
 						
 							break;
-						default:break;	
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;	
 					}
 					break;
 				// 187
@@ -1878,7 +1321,7 @@ public class ASTfactory {
 							afn.setUsedAsObject(aon);
 							executionStack.push(aon);
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 188
@@ -1899,7 +1342,7 @@ public class ASTfactory {
 						aan.setArrayType(type+"");
 						executionStack.push(aan);
 						break;
-					default:break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 189
@@ -1919,7 +1362,7 @@ public class ASTfactory {
 							aan.setArraySize(size);
 							executionStack.push(aan);
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 190
@@ -1938,7 +1381,7 @@ public class ASTfactory {
 						acn.setUsedBy(acn);
 						executionStack.push(acn);
 						break;
-					default:break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 191
@@ -1956,7 +1399,7 @@ public class ASTfactory {
 						arn.setReturnType("Object Throw");
 						arn.setReturnValue(arn);
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 192
@@ -1976,7 +1419,7 @@ public class ASTfactory {
 						ast.setUsedBy(acn);
 						executionStack.push(acn);
 						break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 193
@@ -1997,7 +1440,7 @@ public class ASTfactory {
 							acn.setCallBy(check);
 							executionStack.push(acn);
 							break;
-						default:break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 194
@@ -2015,7 +1458,7 @@ public class ASTfactory {
 						lock.setUsedBy(amn);
 						amn.addParameter(lock);
 						break;
-					default:break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 195
@@ -2033,7 +1476,7 @@ public class ASTfactory {
 						lock.setUsedBy(amn);
 						amn.addParameter(lock);
 						break;
-					default:break;
+					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 198
@@ -2058,7 +1501,8 @@ public class ASTfactory {
 							ajn.setSecondOperand(acn);
 							ajn.setCompare("==");
 							ajn.setTrueLabel(temp.getLabel().toString());
-						default:break;
+							break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				// 199
@@ -2083,7 +1527,8 @@ public class ASTfactory {
 						ajn.setSecondOperand(acn);
 						ajn.setCompare("!=");
 						ajn.setTrueLabel(temp.getLabel().toString());
-						default:break;
+						break;
+						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
 				default:

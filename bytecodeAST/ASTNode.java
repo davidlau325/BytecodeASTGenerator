@@ -77,6 +77,7 @@ public class ASTNode {
 	protected ASTLabelNode defaultLabel;
 	protected ArrayList<ASTLabelNode> labels;
 	protected ASTNode checkValue;
+	protected ArrayList<Integer> compareKeys;
 	
 	public ASTNode(){
 		this.ASTKind="ASTNode";

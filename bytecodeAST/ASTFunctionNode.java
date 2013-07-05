@@ -9,6 +9,7 @@ public class ASTFunctionNode extends ASTNode{
 		super();
 		this.ASTKind="ASTFunctionNode";
 		this.childMethod=new ArrayList<ASTNode>();
+		this.exception=new ArrayList<String>();
 	}
 	
 	public void addChild(ASTNode child){
@@ -20,8 +21,8 @@ public class ASTFunctionNode extends ASTNode{
 	public void setDesc(String desc){
 		this.desc=desc;
 	}
-	public void setException(List<String> exception){
-		this.exception=exception;
+	public void setException(String exception){
+		this.exception.add(exception);
 	}
 	public void setParentClass(ASTNode parent){
 		this.parentClass=parent;

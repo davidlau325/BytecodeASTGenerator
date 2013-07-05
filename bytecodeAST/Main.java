@@ -24,6 +24,9 @@ public class Main {
 	    
 		f = new ZipFile(fileName);
 	    Enumeration<? extends ZipEntry> en=f.entries();
+	    ASTClassNode head=new ASTClassNode();
+	    head.setName(jarName);
+	    
 	    while(en.hasMoreElements()){
 	    	ZipEntry e=en.nextElement();
 	    	String name=e.getName();
@@ -41,25 +44,23 @@ public class Main {
         ASTClassNode astClassNode=new ASTClassNode();
         astClassNode.setName(classNode.name);
         astClassNode.setSuperName(classNode.superName);
+        head.setChild(astClassNode);
         for(Object inter:classNode.interfaces){
         	astClassNode.addInterface(inter.toString());
         }
         
         List<MethodNode> mnList=classNode.methods;
-        for(MethodNode mn:mnList){
-        	
-        	ASTfactory af=new ASTfactory();
-        	af.generateFunctionAST(mn);	
-        	ASTFunctionNode functionNode=(ASTFunctionNode)af.getASTNode();
-        	functionNode.setParentClass(astClassNode);
-        	astClassNode.setChild(functionNode);
-        	
-        }
-        
-        ASTPrinter print=new ASTPrinter(astClassNode,jarName);
-        print.printClassInfo();
-       
+        		for(MethodNode mn:mnList){
+        			ASTfactory af=new ASTfactory();
+        			af.generateFunctionAST(mn);	
+        			ASTFunctionNode functionNode=(ASTFunctionNode)af.getASTNode();
+        			functionNode.setParentClass(astClassNode);
+        			astClassNode.setChild(functionNode);
+        		}
 	    	}
 	    }
+	    
+	    ASTPrinter print=new ASTPrinter(head,jarName);
+        print.printAllMethod(true);
 	}
 }
