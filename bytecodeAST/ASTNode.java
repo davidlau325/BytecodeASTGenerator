@@ -18,7 +18,7 @@ public class ASTNode {
 	//Local Variable Node
 	protected String variableType;
 	protected int variableIndex;
-	protected ASTNode variableValue;
+	protected ArrayList<ASTNode> variableValue;
 	
 	protected String ObjectType;
 	protected String name;
@@ -27,8 +27,9 @@ public class ASTNode {
 	protected String constantValue;
 	protected String constantType;
 	
+	// Field Node
 	protected String owner;
-	protected ASTNode fieldValue;
+	protected ArrayList<ASTNode> fieldValue;
 	
 	// Label Node
 	protected String labelID;
@@ -36,6 +37,7 @@ public class ASTNode {
 	
 	// Return Node
 	protected String returnType;
+	protected ASTFunctionNode returnFunction;
 	
 	// Function Node
 	protected ArrayList<ASTNode> childMethod;
@@ -87,7 +89,6 @@ public class ASTNode {
 		this.usedAsObject=new ArrayList<ASTNode>();
 	}
 	
-	//Mutator
 	public void setSignature(String sign){
 		this.signature=sign;
 	}
@@ -107,7 +108,6 @@ public class ASTNode {
 		this.usedAsObject.add(used);
 	}
 	
-	//accessor
 	public String getASTKind(){
 		return this.ASTKind;
 	}

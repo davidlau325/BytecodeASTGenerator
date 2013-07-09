@@ -1,10 +1,12 @@
 package bytecodeAST;
+import java.util.ArrayList;
 
 public class ASTFieldNode extends ASTNode {
 	
 	public ASTFieldNode(){
 		super();
 		this.ASTKind="ASTFieldNode";
+		this.fieldValue=new ArrayList<ASTNode>();
 	}
 	
 	public void setName(String name){
@@ -14,7 +16,7 @@ public class ASTFieldNode extends ASTNode {
 		this.owner=owner;
 	}
 	public void setFieldValue(ASTNode value){
-		this.fieldValue=value;
+		this.fieldValue.add(value);
 	}
 	
 	public String getName(){
@@ -23,7 +25,7 @@ public class ASTFieldNode extends ASTNode {
 	public String getOwner(){
 		return this.owner;
 	}
-	public ASTNode getFieldValue(){
+	public ArrayList<ASTNode> getFieldValue(){
 		return this.fieldValue;
 	}
 

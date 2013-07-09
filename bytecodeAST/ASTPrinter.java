@@ -37,30 +37,124 @@ public class ASTPrinter {
     pwOut.println();
     pwOut.close();
 	}
-	
-	private ASTNode checkReturnKind(PrintWriter pwOut,ASTNode usedReturn){
-		ASTNode next=null;
-		switch(usedReturn.getASTKind()){
-		case "ASTFieldNode":
-		{
-			ASTFieldNode afn=(ASTFieldNode)usedReturn;
-			pwOut.println("ASTFieldNode");
-			pwOut.println("Name: "+afn.getName());
-			pwOut.println("Owner: "+afn.getOwner());
-			pwOut.println("Sign: "+afn.getSignature());
-			if(!afn.getUsedBy().isEmpty()){
-				next=afn.getUsedBy().get(0);
-			}
-			if(!afn.getUsedAsObject().isEmpty()){
-				next=afn.getUsedAsObject().get(0);
-			}
+	private void printASTMethodNode(PrintWriter pwOut,ASTMethodNode amn){
+		pwOut.println("ASTMethodNode");
+		pwOut.println("Name: "+amn.getName());
+		pwOut.println("Owner: "+amn.getOwner());
+		pwOut.println("Sign: "+amn.getSignature());
+		pwOut.println("Call By:{");
+		for(ASTNode call:amn.getCallBy()){
+			pwOut.println(call.getASTKind());
 		}
-		break;
-		
-		default:System.out.println(usedReturn.getASTKind());
+		pwOut.println("}");
+	}
+	private void printASTReturnNode(PrintWriter pwOut,ASTReturnNode arn){
+		pwOut.println("ASTReturnNode");
+		pwOut.println("Type: "+arn.getReturnType());
+		ASTFunctionNode aafn=arn.getReturnFunction();
+		pwOut.println("From Method: "+aafn.getName());
+		pwOut.println("Method Sign: "+aafn.getDesc());
+	}
+	private void printASTFieldNode(PrintWriter pwOut,ASTFieldNode afn){
+		pwOut.println("ASTFieldNode");
+		pwOut.println("Name: "+afn.getName());
+		pwOut.println("Owner: "+afn.getOwner());
+		pwOut.println("Sign: "+afn.getSignature());
+	}
+	private void printASTLocalVariableNode(PrintWriter pwOut,ASTLocalVariableNode alvn){
+		pwOut.println("ASTLocalVariableNode");
+		pwOut.println("Type: "+alvn.getVariableType());
+	}
+	private void printASTCastNode(PrintWriter pwOut,ASTCastNode acn){
+		pwOut.println("ASTCastNode");
+		pwOut.println("Original: "+acn.getOriginalCast());
+		pwOut.println("Casted: "+acn.getConvertedCast());
+	}
+	private void printASTJumpNode(PrintWriter pwOut,ASTJumpNode ajn){
+		pwOut.println("ASTJumpNode");
+		pwOut.println("Operator: "+ajn.getCompare());
+		pwOut.println("Operand1: "+ajn.getFirstOperand().getASTKind());
+		pwOut.println("Operand2: "+ajn.getSecondOperand().getASTKind());
+		pwOut.println("True: "+ajn.getTrueLabel());
+	}
+	private void printASTArithmeticNode(PrintWriter pwOut,ASTArithmeticNode aan){
+		pwOut.println("ASTArithmeticNode");
+		pwOut.println("Operator: "+aan.getArithmeticOperator());
+		pwOut.println("Type: "+aan.getArithmeticType());
+		if(aan.getFirstOperand()!=null){
+		pwOut.println("Operand1: "+aan.getFirstOperand().getASTKind());
+		}
+		pwOut.println("Operand2: "+aan.getSecondOperand().getASTKind());
+	}
+	private void printASTArrayValueNode(PrintWriter pwOut,ASTArrayValueNode aavn){
+		pwOut.println("ASTArrayValueNode");
+		pwOut.println("Index: "+aavn.getValueIndex());
+		pwOut.println("Type: "+aavn.getValueType());
+		if(aavn.getValueNode()!=null){
+		pwOut.println("Value: "+aavn.getValueNode().getASTKind());
+		}
+	}
+	private void printASTConstantNode(PrintWriter pwOut,ASTConstantNode acn){
+		pwOut.println("ASTConstantNode");
+		pwOut.println("Value: "+acn.getConstantValue());
+		pwOut.println("Type: "+acn.getConstantType());
+	}
+	private void printASTArrayNode(PrintWriter pwOut,ASTArrayNode aan){
+		pwOut.println("ASTArrayNode");
+		pwOut.println("Type: "+aan.getArrayType());
+		pwOut.println("Size: "+aan.getArraySize().getASTKind());
+	}
+	private void checkReturnKind(PrintWriter pwOut,ASTNode usedReturn,int level){
+		if(level>2){
+			return;
+		}
+		switch(usedReturn.getASTKind()){
+		case "ASTArrayNode":
+			printASTArrayNode(pwOut,(ASTArrayNode)usedReturn);
+			break;
+		case "ASTArrayValueNode":
+			printASTArrayValueNode(pwOut,(ASTArrayValueNode)usedReturn);
+			break;
+		case "ASTArithmeticNode":
+			printASTArithmeticNode(pwOut,(ASTArithmeticNode)usedReturn);
+			break;
+		case "ASTCastNode":
+			printASTCastNode(pwOut,(ASTCastNode)usedReturn);
+			break;
+		case "ASTConstantNode":
+			printASTConstantNode(pwOut,(ASTConstantNode)usedReturn);
+			break;
+		case "ASTFieldNode":
+			printASTFieldNode(pwOut,(ASTFieldNode)usedReturn);
+			break;
+		case "ASTJumpNode":
+			printASTJumpNode(pwOut,(ASTJumpNode)usedReturn);
+			break;
+		case "ASTLocalVariableNode":
+			printASTLocalVariableNode(pwOut,(ASTLocalVariableNode)usedReturn);
+			break;
+		case "ASTMethodNode":
+			printASTMethodNode(pwOut,(ASTMethodNode)usedReturn);
+			break;
+		case "ASTReturnNode":
+			printASTReturnNode(pwOut,(ASTReturnNode)usedReturn);
+			break;
+		default:
+			System.out.println(usedReturn.getASTKind());
 			break;
 		}
-		return next;
+		if(level<2){
+		pwOut.println("Used By {");
+		for(ASTNode ast:usedReturn.getUsedBy()){
+			checkReturnKind(pwOut,ast,(level+1));
+		}
+		pwOut.println("}");
+		pwOut.println("Used As Object {");
+		for(ASTNode ast:usedReturn.getUsedAsObject()){
+			checkReturnKind(pwOut,ast,(level+1));
+		}
+		pwOut.println("}");
+		}
 	}
 	
 	
@@ -83,6 +177,11 @@ public class ASTPrinter {
 								pwOut.println(amn.getName());
 								pwOut.println(amn.getOwner());
 								pwOut.println(amn.getSignature());
+								pwOut.println("Call By: {");
+								for(ASTNode call:amn.getCallBy()){
+								pwOut.println(call.getASTKind());	
+								}
+								pwOut.println("}");
 								pwOut.println("argument: {");
 								for(ASTNode para:amn.getPara()){
 									pwOut.println(para.getASTKind());
@@ -93,25 +192,14 @@ public class ASTPrinter {
 								if(returnValue!=null){
 								ASTObjectNode aon=(ASTObjectNode)returnValue;
 								pwOut.println(aon.getObjectType());
-								pwOut.println("Used by: {");
+								pwOut.println("Used By: {");
 								for(ASTNode usedReturn:amn.getUsedBy()){
-									pwOut.println("#1");
-									ASTNode first=checkReturnKind(pwOut,usedReturn);
-									pwOut.println("#2");
-									ASTNode second=null;
-									if(first!=null){
-										pwOut.println("get to second");
-										second=checkReturnKind(pwOut,first);
-									}
-									pwOut.println("#3");
-									if(second!=null){
-										checkReturnKind(pwOut,second);
-									}
+									checkReturnKind(pwOut,usedReturn,0);
 								}
 								pwOut.println("}");
-								pwOut.println("Used as object:{");
+								pwOut.println("Used As Object:{");
 								for(ASTNode usedObject:amn.getUsedAsObject()){
-									
+									checkReturnKind(pwOut,usedObject,0);
 								}
 								pwOut.println("}");
 								}

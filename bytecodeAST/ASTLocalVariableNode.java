@@ -1,12 +1,12 @@
 package bytecodeAST;
-
+import java.util.ArrayList;
 
 public class ASTLocalVariableNode extends ASTNode {
 	
 	public ASTLocalVariableNode(){
 		super();
 		this.ASTKind="ASTLocalVariableNode";
-		this.variableValue=null;
+		this.variableValue=new ArrayList<ASTNode>();
 	}
 	
 	public void setIndex(int index){
@@ -16,7 +16,7 @@ public class ASTLocalVariableNode extends ASTNode {
 		this.variableType=type;
 	}
 	public void setVariableValue(ASTNode value){
-		this.variableValue=value;
+		this.variableValue.add(value);
 	}
 	public int getIndex(){
 		return this.variableIndex;
@@ -24,7 +24,7 @@ public class ASTLocalVariableNode extends ASTNode {
 	public String getVariableType(){
 		return this.variableType;
 	}
-	public ASTNode getVariableValue(){
+	public ArrayList<ASTNode> getVariableValue(){
 		return this.variableValue;
 	}
 

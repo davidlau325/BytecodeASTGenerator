@@ -2,7 +2,7 @@ package bytecodeAST;
 
 import java.util.Iterator;
 import java.util.Stack;
-
+import java.util.HashMap;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
@@ -90,20 +90,26 @@ public class ASTfactory {
 		aatn.setArithmeticType(type);
 		executionStack.push(aatn);
 	}
-	private void singleStore(AbstractInsnNode ain,int newLabel,String type){
+	private void singleStore(AbstractInsnNode ain,int newLabel,String type,HashMap<Integer,ASTLocalVariableNode> localVariable){
 		VarInsnNode vin=(VarInsnNode)ain;
-		ASTLocalVariableNode alvn=new ASTLocalVariableNode();
-		alvn.setIndex(vin.var);
-		alvn.setVariableType(type);
-		this.thisAST.setUsedAsObject(alvn);
 		ASTNode ast;
 		if(newLabel==2 && executionStack.isEmpty()){
 			ast=currentLabelNode;
 		}else{
 			ast=executionStack.pop();
 		}
+		if(localVariable.containsKey((Integer)vin.var)){
+			ASTLocalVariableNode alvn=localVariable.get((Integer)vin.var);
+			alvn.setVariableValue(ast);
+			ast.setUsedBy(alvn);
+		}else{
+		ASTLocalVariableNode alvn=new ASTLocalVariableNode();
+		alvn.setIndex(vin.var);
+		alvn.setVariableType(type);
 		alvn.setVariableValue(ast);
 		ast.setUsedBy(alvn);
+		localVariable.put((Integer)vin.var, alvn);
+		}
 	}
 	private void arrayStore(int newLabel,String type){
 		ASTNode value;
@@ -134,14 +140,18 @@ public class ASTfactory {
 		aavn.setUsedBy(array);
 		array.setSignature(type);
 	}
-	private void singleLoad(AbstractInsnNode ain,String type){
+	private void singleLoad(AbstractInsnNode ain,String type,HashMap<Integer,ASTLocalVariableNode> localVariable){
 		VarInsnNode vin=(VarInsnNode)ain;
+		if(localVariable.containsKey((Integer)vin.var)){
+			ASTLocalVariableNode alvn=localVariable.get((Integer)vin.var);
+			executionStack.push(alvn);
+		}else{
 		ASTLocalVariableNode alvn=new ASTLocalVariableNode();
 		alvn.setIndex(vin.var);
 		alvn.setVariableType(type);
-		this.thisAST.setUsedAsObject(alvn);
-		alvn.setCallBy(this.thisAST);
+		localVariable.put((Integer)vin.var, alvn);
 		executionStack.push(alvn);
+		}
 	}
 	private void arrayLoad(int newLabel,String type){
 		ASTNode index;
@@ -164,7 +174,7 @@ public class ASTfactory {
 		array.setUsedAsObject(aavn);
 		executionStack.push(aavn);
 	}
-	private void setReturn(int newLabel,String type){
+	private void setReturn(int newLabel,String type,ASTFunctionNode afn){
 		ASTReturnNode arn=new ASTReturnNode();
 		ASTNode ast;
 		if(newLabel==2 && executionStack.isEmpty()){
@@ -174,7 +184,8 @@ public class ASTfactory {
 		}
 		ast.setUsedBy(arn);
 		arn.setReturnType(type);
-		arn.setReturnValue(arn);
+		arn.setReturnValue(ast);
+		arn.setReturnFunction(afn);
 	}
 	private void setNeg(int newLabel,String type){
 		ASTNode get;
@@ -190,8 +201,9 @@ public class ASTfactory {
 		get.setUsedBy(aan);
 		executionStack.push(aan);
 	}
-	public void generateFunctionAST(MethodNode mn){
+	public void generateFunctionAST(MethodNode mn,HashMap<String,ASTFieldNode> fieldVariable){
 			
+			HashMap<Integer,ASTLocalVariableNode> localVariable=new HashMap<Integer,ASTLocalVariableNode>();
 			ASTFunctionNode afn=new ASTFunctionNode();
 			afn.setDesc(mn.desc);
 			afn.setName(mn.name);
@@ -332,31 +344,31 @@ public class ASTfactory {
 				// 21
 				case Opcodes.ILOAD:
 					{
-					singleLoad(ain,"Int");
+					singleLoad(ain,"Int",localVariable);
 					}
 					break;
 				// 22
 				case Opcodes.LLOAD:
 					{
-					singleLoad(ain,"Long");
+					singleLoad(ain,"Long",localVariable);
 					}
 					break;
 				// 23
 				case Opcodes.FLOAD:
 					{
-					singleLoad(ain,"Float");
+					singleLoad(ain,"Float",localVariable);
 					}
 				break;
 				// 24
 				case Opcodes.DLOAD:
 					{
-					singleLoad(ain,"Double");
+					singleLoad(ain,"Double",localVariable);
 					}
 				break;
 				// 25
 				case Opcodes.ALOAD: 
 					{
-					singleLoad(ain,"Object");
+					singleLoad(ain,"Object",localVariable);
 					}
 					break;
 				// 46
@@ -381,23 +393,23 @@ public class ASTfactory {
 					break;
 				// 54
 				case Opcodes.ISTORE:
-					{ singleStore(ain,newLabel,"Int");}
+					{ singleStore(ain,newLabel,"Int",localVariable);}
 					break;
 				// 55
 				case Opcodes.LSTORE:
-					{ singleStore(ain,newLabel,"Long");}
+					{ singleStore(ain,newLabel,"Long",localVariable);}
 					break;
 				// 56
 				case Opcodes.FSTORE:
-					{ singleStore(ain,newLabel,"Float");}
+					{ singleStore(ain,newLabel,"Float",localVariable);}
 					break;
 				// 57
 				case Opcodes.DSTORE:
-					{ singleStore(ain,newLabel,"Double");}
+					{ singleStore(ain,newLabel,"Double",localVariable);}
 					break;
 				// 58
 				case Opcodes.ASTORE:
-					{ singleStore(ain,newLabel,"Object");}
+					{ singleStore(ain,newLabel,"Object",localVariable);}
 					break;
 				// 79
 				case Opcodes.IASTORE:
@@ -1025,23 +1037,23 @@ public class ASTfactory {
 					break;
 				// 172
 				case Opcodes.IRETURN:
-					{setReturn(newLabel,"Int");}
+					{setReturn(newLabel,"Int",afn);}
 					break;
 				// 173
 				case Opcodes.LRETURN:
-					{setReturn(newLabel,"Long");}
+					{setReturn(newLabel,"Long",afn);}
 					break;
 				// 174
 				case Opcodes.FRETURN:
-					{setReturn(newLabel,"Float");}
+					{setReturn(newLabel,"Float",afn);}
 					break;
 				// 175
 				case Opcodes.DRETURN:
-					{setReturn(newLabel,"Double");}
+					{setReturn(newLabel,"Double",afn);}
 					break;
 				// 176
 				case Opcodes.ARETURN:
-					{setReturn(newLabel,"Object");}
+					{setReturn(newLabel,"Object",afn);}
 					break;
 				// 177
 				case Opcodes.RETURN:
@@ -1056,15 +1068,18 @@ public class ASTfactory {
 					switch(ain.getType()){
 					case 4:
 						FieldInsnNode fin=(FieldInsnNode)ain;
+						if(fieldVariable.containsKey(fin.name)){
+							executionStack.push(fieldVariable.get(fin.name));
+						}else{
 						ASTFieldNode fien=new ASTFieldNode();
-							
 						fien.setCallBy(afn);
 						fien.setName(fin.name);
 						fien.setOwner(fin.owner);
 						fien.setSignature(fin.desc);
 						afn.setUsedAsObject(fien);
-						
-						executionStack.push(fien);		
+						fieldVariable.put(fin.name, fien);
+						executionStack.push(fien);	
+						}
 						break;
 					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
@@ -1074,21 +1089,26 @@ public class ASTfactory {
 					switch(ain.getType()){
 					case 4:
 						FieldInsnNode fin=(FieldInsnNode)ain;
-						ASTFieldNode fien=new ASTFieldNode();
 						ASTNode ast;
 						if(newLabel==2 && executionStack.isEmpty()){
 							ast=currentLabelNode;
 						}else{
 							ast=executionStack.pop();
 						}
-						ast.setUsedBy(fien);
+						if(fieldVariable.containsKey(fin.name)){
+							ASTFieldNode fien=fieldVariable.get(fin.name);
+							fien.setFieldValue(ast);
+							ast.setUsedBy(fien);
+						}else{
+						ASTFieldNode fien=new ASTFieldNode();
 						fien.setCallBy(afn);
+						afn.setUsedAsObject(fien);
 						fien.setName(fin.name);
 						fien.setOwner(fin.owner);
 						fien.setSignature(fin.desc);
 						fien.setFieldValue(ast);
-						
-						afn.addChild(fien);
+						fieldVariable.put(fin.name, fien);
+						}
 						break;
 					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
@@ -1098,20 +1118,26 @@ public class ASTfactory {
 					switch(ain.getType()){
 						case 4:
 							FieldInsnNode fin=(FieldInsnNode)ain;
-							ASTFieldNode fien=new ASTFieldNode();
 							ASTNode temp;
 							if(newLabel==2 && executionStack.isEmpty()){
 								temp=currentLabelNode;
 							}else{
 								temp=executionStack.pop();		
 							}
+							if(fieldVariable.containsKey(fin.name)){
+								ASTFieldNode fien=fieldVariable.get(fin.name);
+								fien.setCallBy(temp);
+								temp.setUsedAsObject(fien);
+								executionStack.push(fien);
+							}else{
+							ASTFieldNode fien=new ASTFieldNode();
 							fien.setCallBy(temp);
 							fien.setName(fin.name);
 							fien.setOwner(fin.owner);
 							fien.setSignature(fin.desc);
 							temp.setUsedAsObject(fien);
-							
 							executionStack.push(fien);		
+							}
 							break;
 						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
@@ -1121,28 +1147,33 @@ public class ASTfactory {
 					switch(ain.getType()){
 						case 4: 
 							FieldInsnNode fin=(FieldInsnNode)ain;
-							ASTFieldNode fien=new ASTFieldNode();
 							ASTNode temp;
 							if(newLabel==2 && executionStack.isEmpty()){
 								temp=currentLabelNode;
 							}else{
 								temp=executionStack.pop();
 							}
-							temp.setUsedBy(fien);
-							fien.setFieldValue(temp);
 							ASTNode temp2;
 							if(newLabel==2 && executionStack.isEmpty()){
 								temp2=currentLabelNode;
 							}else{
 								temp2=executionStack.pop();
 							}
+							if(fieldVariable.containsKey(fin.name)){
+								ASTFieldNode fien=fieldVariable.get(fin.name);
+								temp.setUsedBy(fien);
+								fien.setFieldValue(temp);
+								temp2.setUsedAsObject(fien);
+								fien.setCallBy(temp2);
+							}
+							ASTFieldNode fien=new ASTFieldNode();
+							temp.setUsedBy(fien);
+							fien.setFieldValue(temp);
 							temp2.setUsedAsObject(fien);
 							fien.setCallBy(temp2);
 							fien.setName(fin.name);
 							fien.setOwner(fin.owner);
 							fien.setSignature(fin.desc);
-							
-							afn.addChild(fien);
 							break;
 						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
@@ -1397,7 +1428,7 @@ public class ASTfactory {
 						}
 						ast.setUsedBy(arn);
 						arn.setReturnType("Object Throw");
-						arn.setReturnValue(arn);
+						arn.setReturnValue(ast);
 						break;
 						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}

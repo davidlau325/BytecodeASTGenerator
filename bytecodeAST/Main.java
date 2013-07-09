@@ -2,6 +2,7 @@ package bytecodeAST;
 
 import java.util.List;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.objectweb.asm.ClassReader;
@@ -41,6 +42,8 @@ public class Main {
 	    ClassNode classNode=new ClassNode();
         cr.accept(classNode, 0);
         
+        HashMap<String,ASTFieldNode> fieldVariable=new HashMap<String,ASTFieldNode>();
+        
         ASTClassNode astClassNode=new ASTClassNode();
         astClassNode.setName(classNode.name);
         astClassNode.setSuperName(classNode.superName);
@@ -52,7 +55,7 @@ public class Main {
         List<MethodNode> mnList=classNode.methods;
         		for(MethodNode mn:mnList){
         			ASTfactory af=new ASTfactory();
-        			af.generateFunctionAST(mn);	
+        			af.generateFunctionAST(mn,fieldVariable);	
         			ASTFunctionNode functionNode=(ASTFunctionNode)af.getASTNode();
         			functionNode.setParentClass(astClassNode);
         			astClassNode.setChild(functionNode);

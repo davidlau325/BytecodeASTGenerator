@@ -13,6 +13,9 @@ public class ASTReturnNode extends ASTNode{
 	public void setReturnValue(ASTNode value){
 		this.returnValue=value;
 	}
+	public void setReturnFunction(ASTFunctionNode value){
+		this.returnFunction=value;
+	}
 	
 	public String getReturnType(){
 		return this.returnType;
@@ -20,5 +23,8 @@ public class ASTReturnNode extends ASTNode{
 	public ASTNode getReturnValue(){
 		return this.returnValue;
 	}
-
+	public ASTFunctionNode getReturnFunction(){
+		return this.returnFunction;
+	}
+	
 }
