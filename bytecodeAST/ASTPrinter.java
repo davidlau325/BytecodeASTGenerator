@@ -2,16 +2,22 @@ package bytecodeAST;
 
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.TreeMap;
 
 public class ASTPrinter {
 	
 	protected ASTNode beginNode;
 	protected String jarName;
+	protected TreeMap<String,ArrayList<String>> matrix;
 	
 	public ASTPrinter(ASTNode begin,String jarName){
 		this.beginNode=begin;
 		this.jarName=jarName;
+		matrix=new TreeMap<String,ArrayList<String>>();
 	}
+	
+	
 	
 	public void printClassInfo() throws Exception{
     
@@ -156,7 +162,103 @@ public class ASTPrinter {
 		pwOut.println("}");
 		}
 	}
+	private void getRelatedAPI(PrintWriter pwOut,ASTNode current,ArrayList<String> CallingRecord){
+		if(current!=null){
+			if(current.getASTKind().equals("ASTMethodNode")){
+				ASTMethodNode amn=(ASTMethodNode)current;
+				String name=amn.getOwner()+" "+amn.getName();
+				if(CallingRecord.contains(name)){
+					return;
+				}else{
+					CallingRecord.add(name);
+					pwOut.println(name);
+				}
+			}
+			if(current.getASTKind().equals("ASTFieldNode")){
+				ASTFieldNode afn=(ASTFieldNode)current;
+				String name=afn.getOwner()+" "+afn.getName();
+				if(CallingRecord.contains(name)){
+					return;
+				}else{
+					CallingRecord.add(name);
+				}
+			}
+		if(!current.getUsedBy().isEmpty()){
+			for(ASTNode now:current.getUsedBy()){
+				ASTNode next=getNext(pwOut,now);
+				getRelatedAPI(pwOut,next,CallingRecord);
+			}
+		}
+		if(!current.getUsedAsObject().isEmpty()){
+			for(ASTNode now:current.getUsedAsObject()){
+				if(now.getASTKind().equals("ASTMethodNode")){
+					ASTMethodNode amn=(ASTMethodNode)now;
+					String name=amn.getOwner()+" "+amn.getName();
+					if(!CallingRecord.contains(name)){
+					CallingRecord.add(name);
+					pwOut.println(name);
+					}
+				}
+			}
+		}
+		}else{
+			return;
+		}
+	}
+	private ASTNode getNext(PrintWriter pwOut,ASTNode check){
+		ASTNode next=null;
+		switch(check.getASTKind()){
+		case "ASTMethodNode":{
+			next=check;
+			break;	
+		}
+		case "ASTCastNode":{
+			next=check;
+			break;
+		}
+		case "ASTFieldNode":{
+			next=check;
+			break;
+		}
+		case "ASTLocalVariableNode":{
+			next=check;
+			break;
+		}
+		default:break;
+		}
+		return next;
+	}
 	
+	public void makeMatrix(boolean andriodOnly) throws Exception{
+		ASTClassNode acn=(ASTClassNode)this.beginNode;
+		PrintWriter pwOut=new PrintWriter(new FileOutputStream("Matrix/"+jarName+".txt"));
+		for(ASTNode tempHead:acn.getChild()){
+			ASTClassNode classLevel=(ASTClassNode)tempHead;
+			for(ASTNode tempClass:classLevel.getChild()){
+				ASTFunctionNode functionLevel=(ASTFunctionNode)tempClass;
+				for(ASTNode tempFunction:functionLevel.getChild()){
+					if(tempFunction.getASTKind().equals("ASTMethodNode")){
+						ASTMethodNode amn=(ASTMethodNode)tempFunction;
+						if(andriodOnly==true){
+							String check=amn.getOwner();
+							check=check.substring(0, 7);
+							if(check.equals("android")){
+							String rowName=classLevel.getName()+" "+functionLevel.getName()+" "+amn.getOwner()+" "+amn.getName();
+							pwOut.println("---"+rowName+"---");
+							ArrayList<String> callingRecord=new ArrayList<String>();
+							getRelatedAPI(pwOut,amn,callingRecord);
+							pwOut.println();
+							}
+						}else{
+							String rowName=classLevel.getName()+" "+functionLevel.getName()+" "+amn.getOwner()+" "+amn.getName();
+							pwOut.println(rowName);
+						}
+					}
+				}
+			}
+		}
+		pwOut.close();
+	}
 	
 	public void printAllMethod(boolean andriodOnly) throws Exception{
 		ASTClassNode acn=(ASTClassNode)this.beginNode;

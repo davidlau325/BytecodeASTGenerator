@@ -64,6 +64,6 @@ public class Main {
 	    }
 	    
 	    ASTPrinter print=new ASTPrinter(head,jarName);
-        print.printAllMethod(true);
+        print.makeMatrix(true);
 	}
 }

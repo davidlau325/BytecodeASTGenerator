@@ -1165,7 +1165,7 @@ public class ASTfactory {
 								fien.setFieldValue(temp);
 								temp2.setUsedAsObject(fien);
 								fien.setCallBy(temp2);
-							}
+							}else{
 							ASTFieldNode fien=new ASTFieldNode();
 							temp.setUsedBy(fien);
 							fien.setFieldValue(temp);
@@ -1174,6 +1174,8 @@ public class ASTfactory {
 							fien.setName(fin.name);
 							fien.setOwner(fin.owner);
 							fien.setSignature(fin.desc);
+							fieldVariable.put(fin.name, fien);
+							}
 							break;
 						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
