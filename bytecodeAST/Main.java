@@ -1,6 +1,7 @@
 package bytecodeAST;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.zip.ZipEntry;
@@ -25,6 +26,7 @@ public class Main {
 	    
 		f = new ZipFile(fileName);
 	    Enumeration<? extends ZipEntry> en=f.entries();
+	    ArrayList<String> allClasses=new ArrayList<String>();
 	    ASTClassNode head=new ASTClassNode();
 	    head.setName(jarName);
 	    
@@ -46,6 +48,7 @@ public class Main {
         
         ASTClassNode astClassNode=new ASTClassNode();
         astClassNode.setName(classNode.name);
+        allClasses.add(classNode.name);
         astClassNode.setSuperName(classNode.superName);
         head.setChild(astClassNode);
         for(Object inter:classNode.interfaces){
@@ -63,7 +66,7 @@ public class Main {
 	    	}
 	    }
 	    
-	    ASTPrinter print=new ASTPrinter(head,jarName);
+	    ASTPrinter print=new ASTPrinter(head,jarName,allClasses);
         print.makeMatrix(true);
 	}
 }

@@ -3,7 +3,7 @@ package bytecodeAST;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ASTNode {
+public class ASTNode{
 	
 	//main
 	protected String ASTKind;
@@ -88,6 +88,9 @@ public class ASTNode {
 		this.usedBy=new ArrayList<ASTNode>();
 		this.usedAsObject=new ArrayList<ASTNode>();
 	}
+	public void setName(String name){
+		this.name=name;
+	}
 	
 	public void setSignature(String sign){
 		this.signature=sign;
@@ -108,6 +111,9 @@ public class ASTNode {
 		this.usedAsObject.add(used);
 	}
 	
+	public String getName(){
+		return this.name;
+	}
 	public String getASTKind(){
 		return this.ASTKind;
 	}
@@ -128,5 +134,43 @@ public class ASTNode {
 	}
 	public ArrayList<ASTNode> getUsedAsObject(){
 		return this.usedAsObject;
+	}
+
+	@Override
+	public boolean equals(Object obj){
+		ASTNode other=(ASTNode)obj;
+		if((this.ASTKind.equals("ASTMethodNode") && other.ASTKind.equals("ASTMethodNode")) || (this.ASTKind.equals("ASTFieldNode") && other.ASTKind.equals("ASTFieldNode"))){
+			if(this.name.equals(other.name) && this.owner.equals(other.owner)){
+				return true;
+			}else{
+				return false;
+			}
+		}else if(this.ASTKind.equals("ASTArithmeticNode") && other.ASTKind.equals("ASTArithmeticNode")){
+			if(this.arithmeticOperator.equals(other.arithmeticOperator) && this.arithmeticType.equals(other.arithmeticType) && this.name.equals(other.name)){
+				return true;
+			}else{
+				return false;
+			}
+		}else if(this.ASTKind.equals("ASTArrayNode") && other.ASTKind.equals("ASTArrayNode")){
+			if(this.name.equals(other.name) && this.arrayType.equals(other.arrayType)){
+				return true;
+			}else{
+				return false;
+			}
+		}else if(this.ASTKind.equals("ASTArrayValueNode") && other.ASTKind.equals("ASTArrayValueNode")){
+			if(this.name.equals(other.name)){
+				return true;
+			}else{
+				return false;
+			}
+		}else if(this.ASTKind.equals("ASTConstantNode") && other.ASTKind.equals("ASTConstantNode")){
+			if(this.name.equals(other.name) && this.constantType.equals(other.constantType)){
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			return false;
+		}
 	}
 }

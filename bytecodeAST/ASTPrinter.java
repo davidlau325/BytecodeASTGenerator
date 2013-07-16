@@ -10,11 +10,13 @@ public class ASTPrinter {
 	protected ASTNode beginNode;
 	protected String jarName;
 	protected TreeMap<String,ArrayList<String>> matrix;
+	protected ArrayList<String> selfClasses;
 	
-	public ASTPrinter(ASTNode begin,String jarName){
+	public ASTPrinter(ASTNode begin,String jarName,ArrayList<String> selfClasses){
 		this.beginNode=begin;
 		this.jarName=jarName;
-		matrix=new TreeMap<String,ArrayList<String>>();
+		this.matrix=new TreeMap<String,ArrayList<String>>();
+		this.selfClasses=selfClasses;
 	}
 	
 	
@@ -162,27 +164,20 @@ public class ASTPrinter {
 		pwOut.println("}");
 		}
 	}
-	private void getRelatedAPI(PrintWriter pwOut,ASTNode current,ArrayList<String> CallingRecord){
+	private void getRelatedAPI(PrintWriter pwOut,ASTNode current,ArrayList<ASTNode> CallingRecord){
 		if(current!=null){
+			if(CallingRecord.contains(current)){
+				return;
+			}else{
+				CallingRecord.add(current);
 			if(current.getASTKind().equals("ASTMethodNode")){
 				ASTMethodNode amn=(ASTMethodNode)current;
 				String name=amn.getOwner()+" "+amn.getName();
-				if(CallingRecord.contains(name)){
-					return;
-				}else{
-					CallingRecord.add(name);
-					pwOut.println(name);
-				}
-			}
-			if(current.getASTKind().equals("ASTFieldNode")){
-				ASTFieldNode afn=(ASTFieldNode)current;
-				String name=afn.getOwner()+" "+afn.getName();
-				if(CallingRecord.contains(name)){
-					return;
-				}else{
-					CallingRecord.add(name);
-				}
-			}
+					if(!this.selfClasses.contains(amn.getOwner())){
+						pwOut.println(name);
+					}
+			}	
+			
 		if(!current.getUsedBy().isEmpty()){
 			for(ASTNode now:current.getUsedBy()){
 				ASTNode next=getNext(pwOut,now);
@@ -191,44 +186,55 @@ public class ASTPrinter {
 		}
 		if(!current.getUsedAsObject().isEmpty()){
 			for(ASTNode now:current.getUsedAsObject()){
-				if(now.getASTKind().equals("ASTMethodNode")){
-					ASTMethodNode amn=(ASTMethodNode)now;
-					String name=amn.getOwner()+" "+amn.getName();
-					if(!CallingRecord.contains(name)){
-					CallingRecord.add(name);
-					pwOut.println(name);
-					}
-				}
+				ASTNode next=getNext(pwOut,now);
+				getRelatedAPI(pwOut,next,CallingRecord);
 			}
+		}
 		}
 		}else{
 			return;
 		}
 	}
 	private ASTNode getNext(PrintWriter pwOut,ASTNode check){
-		ASTNode next=null;
-		switch(check.getASTKind()){
-		case "ASTMethodNode":{
-			next=check;
-			break;	
+		if(check.getASTKind().equals("ASTJumpNode") || check.getASTKind().equals("ASTLabelNode") || check.getASTKind().equals("ASTSwitchNode")){
+			return null;
+		}else{
+			return check;
 		}
-		case "ASTCastNode":{
-			next=check;
-			break;
-		}
-		case "ASTFieldNode":{
-			next=check;
-			break;
-		}
-		case "ASTLocalVariableNode":{
-			next=check;
-			break;
-		}
-		default:break;
-		}
-		return next;
 	}
 	
+	private void getArgumentAPI(PrintWriter pwOut,ASTNode check,ArrayList<ASTNode> CallingRecord){
+		if(check==null){
+			return;
+		}else{
+			if(CallingRecord.contains(check)){
+				return;
+			}else{
+				pwOut.println(check.getASTKind());
+				CallingRecord.add(check);
+				if(check.getASTKind().equals("ASTMethodNode")){
+					ASTMethodNode amn=(ASTMethodNode)check;
+					pwOut.println(amn.getOwner()+" "+amn.getName());
+					for(Object obj:amn.getPara()){
+						ASTNode ast=(ASTNode)obj;
+						getArgumentAPI(pwOut,ast,CallingRecord);
+					}
+				}else if(check.getASTKind().equals("ASTFieldNode")){
+					ASTFieldNode afn=(ASTFieldNode)check;
+					for(Object obj:afn.getFieldValue()){
+						ASTNode ast=(ASTNode)obj;
+						getArgumentAPI(pwOut,ast,CallingRecord);
+					}
+				}else if(check.getASTKind().equals("ASTLocalVariableNode")){
+					ASTLocalVariableNode alvn=(ASTLocalVariableNode)check;
+					for(Object obj:alvn.getVariableValue()){
+						ASTNode ast=(ASTNode)obj;
+						getArgumentAPI(pwOut,ast,CallingRecord);
+					}
+				}
+			}
+		}
+	}
 	public void makeMatrix(boolean andriodOnly) throws Exception{
 		ASTClassNode acn=(ASTClassNode)this.beginNode;
 		PrintWriter pwOut=new PrintWriter(new FileOutputStream("Matrix/"+jarName+".txt"));
@@ -243,10 +249,17 @@ public class ASTPrinter {
 							String check=amn.getOwner();
 							check=check.substring(0, 7);
 							if(check.equals("android")){
-							String rowName=classLevel.getName()+" "+functionLevel.getName()+" "+amn.getOwner()+" "+amn.getName();
-							pwOut.println("---"+rowName+"---");
-							ArrayList<String> callingRecord=new ArrayList<String>();
+							String rowName=classLevel.getName()+" "+functionLevel.getName()+" "+amn.getOwner()+" "+amn.getName()+" "+amn.getSignature();
+							pwOut.println("->"+rowName);
+							ArrayList<ASTNode> callingRecord=new ArrayList<ASTNode>();
 							getRelatedAPI(pwOut,amn,callingRecord);
+							callingRecord.remove(amn);
+							getArgumentAPI(pwOut,amn,callingRecord);
+							pwOut.println("Call BY:");
+							for(Object obj:amn.getCallBy()){
+								ASTNode ast=(ASTNode)obj;
+								pwOut.println(ast.getASTKind());
+							}
 							pwOut.println();
 							}
 						}else{

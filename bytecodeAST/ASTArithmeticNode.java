@@ -7,6 +7,10 @@ public class ASTArithmeticNode extends ASTNode {
 		this.ASTKind="ASTArithmeticNode";
 	}
 	
+	public void setArithmeticName(String name){
+		this.name=name;
+	}
+	
 	public void setArithmeticOperator(String type){
 		this.arithmeticOperator=type;
 	}
@@ -20,6 +24,9 @@ public class ASTArithmeticNode extends ASTNode {
 		this.secondOperand=second;
 	}
 	
+	public String getArithmeticName(){
+		return this.name;
+	}
 	public String getArithmeticOperator(){
 		return this.arithmeticOperator;
 	}

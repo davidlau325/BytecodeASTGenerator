@@ -10,9 +10,15 @@ public class ASTObjectNode extends ASTNode{
 	public void setObjectType(String type){
 		this.ObjectType=type;
 	}
+	public void setObjectName(String name){
+		this.name=name;
+	}
 	
 	public String getObjectType(){
 		return this.ObjectType;
+	}
+	public String getObjectName(){
+		return this.name;
 	}
 
 }
