@@ -11,6 +11,7 @@ public class ASTPrinter {
 	protected String jarName;
 	protected TreeMap<String,ArrayList<String>> matrix;
 	protected ArrayList<String> selfClasses;
+	protected ASTMethodNode currentChecking;
 	
 	public ASTPrinter(ASTNode begin,String jarName,ArrayList<String> selfClasses){
 		this.beginNode=begin;
@@ -190,6 +191,12 @@ public class ASTPrinter {
 				getRelatedAPI(pwOut,next,CallingRecord);
 			}
 		}
+		if(!current.getCallBy().isEmpty()){
+			for(ASTNode call:current.getCallBy()){
+				ASTNode next=getNext(pwOut,call);
+				getRelatedAPI(pwOut,next,CallingRecord);
+			}
+		}
 		}
 		}else{
 			return;
@@ -210,11 +217,12 @@ public class ASTPrinter {
 			if(CallingRecord.contains(check)){
 				return;
 			}else{
-				pwOut.println(check.getASTKind());
 				CallingRecord.add(check);
 				if(check.getASTKind().equals("ASTMethodNode")){
 					ASTMethodNode amn=(ASTMethodNode)check;
-					pwOut.println(amn.getOwner()+" "+amn.getName());
+					if(!this.selfClasses.contains(amn.getOwner()) && !currentChecking.equals(amn)){
+						pwOut.println(amn.getOwner()+" "+amn.getName());
+					}
 					for(Object obj:amn.getPara()){
 						ASTNode ast=(ASTNode)obj;
 						getArgumentAPI(pwOut,ast,CallingRecord);
@@ -254,12 +262,8 @@ public class ASTPrinter {
 							ArrayList<ASTNode> callingRecord=new ArrayList<ASTNode>();
 							getRelatedAPI(pwOut,amn,callingRecord);
 							callingRecord.remove(amn);
+							currentChecking=amn;
 							getArgumentAPI(pwOut,amn,callingRecord);
-							pwOut.println("Call BY:");
-							for(Object obj:amn.getCallBy()){
-								ASTNode ast=(ASTNode)obj;
-								pwOut.println(ast.getASTKind());
-							}
 							pwOut.println();
 							}
 						}else{

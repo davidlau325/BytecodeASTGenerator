@@ -169,6 +169,12 @@ public class ASTNode{
 			}else{
 				return false;
 			}
+		}else if(this.ASTKind.equals("ASTLocalVariableNode") && other.ASTKind.equals("ASTLocalVariableNode")){
+			if(this.name.equals(other.name) && (this.variableIndex==other.variableIndex) && this.variableType.equals(other.variableType)){
+				return true;
+			}else{
+				return false;
+			}
 		}else{
 			return false;
 		}

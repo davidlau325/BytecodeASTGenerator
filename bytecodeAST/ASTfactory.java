@@ -25,7 +25,6 @@ public class ASTfactory {
 		ASTConstantNode acn=new ASTConstantNode();
 		acn.setConstantValue(value);
 		acn.setConstantType(type);
-		acn.setCallBy(this.thisAST);
 		acn.setName(uniqueIdentifier+"");
 		this.thisAST.setUsedAsObject(acn);
 		executionStack.push(acn);
@@ -92,7 +91,7 @@ public class ASTfactory {
 		aatn.setArithmeticName(uniqueIdentifier+"");
 		executionStack.push(aatn);
 	}
-	private void singleStore(AbstractInsnNode ain,int newLabel,String type,HashMap<Integer,ASTLocalVariableNode> localVariable){
+	private void singleStore(AbstractInsnNode ain,int newLabel,String type,HashMap<Integer,ASTLocalVariableNode> localVariable,int uniqueIdentifier){
 		VarInsnNode vin=(VarInsnNode)ain;
 		ASTNode ast;
 		if(newLabel==2 && executionStack.isEmpty()){
@@ -107,6 +106,7 @@ public class ASTfactory {
 		}else{
 		ASTLocalVariableNode alvn=new ASTLocalVariableNode();
 		alvn.setIndex(vin.var);
+		alvn.setName(uniqueIdentifier+"");
 		alvn.setVariableType(type);
 		alvn.setVariableValue(ast);
 		ast.setUsedBy(alvn);
@@ -144,7 +144,7 @@ public class ASTfactory {
 		uniqueIdentifier++;
 		array.setSignature(type);
 	}
-	private void singleLoad(AbstractInsnNode ain,String type,HashMap<Integer,ASTLocalVariableNode> localVariable){
+	private void singleLoad(AbstractInsnNode ain,String type,HashMap<Integer,ASTLocalVariableNode> localVariable,int uniqueIdentifier){
 		VarInsnNode vin=(VarInsnNode)ain;
 		if(localVariable.containsKey((Integer)vin.var)){
 			ASTLocalVariableNode alvn=localVariable.get((Integer)vin.var);
@@ -153,6 +153,7 @@ public class ASTfactory {
 		ASTLocalVariableNode alvn=new ASTLocalVariableNode();
 		alvn.setIndex(vin.var);
 		alvn.setVariableType(type);
+		alvn.setName(uniqueIdentifier+"");
 		localVariable.put((Integer)vin.var, alvn);
 		executionStack.push(alvn);
 		}
@@ -328,7 +329,6 @@ public class ASTfactory {
 							ASTConstantNode acn=new ASTConstantNode();
 							acn.setConstantValue(iin.operand+"");
 							acn.setConstantType("Int");
-							acn.setCallBy(afn);
 							acn.setName(uniqueIdentifier+"");
 							uniqueIdentifier++;
 							afn.setUsedAsObject(acn);
@@ -345,7 +345,6 @@ public class ASTfactory {
 							ASTConstantNode acn=new ASTConstantNode();
 							acn.setConstantValue(iin.operand+"");
 							acn.setConstantType("Int");
-							acn.setCallBy(afn);
 							acn.setName(uniqueIdentifier+"");
 							uniqueIdentifier++;
 							afn.setUsedAsObject(acn);
@@ -372,31 +371,36 @@ public class ASTfactory {
 				// 21
 				case Opcodes.ILOAD:
 					{
-					singleLoad(ain,"Int",localVariable);
+					singleLoad(ain,"Int",localVariable,uniqueIdentifier);
+					uniqueIdentifier++;
 					}
 					break;
 				// 22
 				case Opcodes.LLOAD:
 					{
-					singleLoad(ain,"Long",localVariable);
+					singleLoad(ain,"Long",localVariable,uniqueIdentifier);
+					uniqueIdentifier++;
 					}
 					break;
 				// 23
 				case Opcodes.FLOAD:
 					{
-					singleLoad(ain,"Float",localVariable);
+					singleLoad(ain,"Float",localVariable,uniqueIdentifier);
+					uniqueIdentifier++;
 					}
 				break;
 				// 24
 				case Opcodes.DLOAD:
 					{
-					singleLoad(ain,"Double",localVariable);
+					singleLoad(ain,"Double",localVariable,uniqueIdentifier);
+					uniqueIdentifier++;
 					}
 				break;
 				// 25
 				case Opcodes.ALOAD: 
 					{
-					singleLoad(ain,"Object",localVariable);
+					singleLoad(ain,"Object",localVariable,uniqueIdentifier);
+					uniqueIdentifier++;
 					}
 					break;
 				// 46
@@ -426,23 +430,28 @@ public class ASTfactory {
 					break;
 				// 54
 				case Opcodes.ISTORE:
-					{ singleStore(ain,newLabel,"Int",localVariable);}
+					{ singleStore(ain,newLabel,"Int",localVariable,uniqueIdentifier);
+					uniqueIdentifier++;}
 					break;
 				// 55
 				case Opcodes.LSTORE:
-					{ singleStore(ain,newLabel,"Long",localVariable);}
+					{ singleStore(ain,newLabel,"Long",localVariable,uniqueIdentifier);
+					uniqueIdentifier++;}
 					break;
 				// 56
 				case Opcodes.FSTORE:
-					{ singleStore(ain,newLabel,"Float",localVariable);}
+					{ singleStore(ain,newLabel,"Float",localVariable,uniqueIdentifier);
+					uniqueIdentifier++;}
 					break;
 				// 57
 				case Opcodes.DSTORE:
-					{ singleStore(ain,newLabel,"Double",localVariable);}
+					{ singleStore(ain,newLabel,"Double",localVariable,uniqueIdentifier);
+					uniqueIdentifier++;}
 					break;
 				// 58
 				case Opcodes.ASTORE:
-					{ singleStore(ain,newLabel,"Object",localVariable);}
+					{ singleStore(ain,newLabel,"Object",localVariable,uniqueIdentifier);
+					uniqueIdentifier++;}
 					break;
 				// 79
 				case Opcodes.IASTORE:
@@ -1144,7 +1153,6 @@ public class ASTfactory {
 							executionStack.push(fieldVariable.get(fin.name));
 						}else{
 						ASTFieldNode fien=new ASTFieldNode();
-						fien.setCallBy(afn);
 						fien.setName(fin.name);
 						fien.setOwner(fin.owner);
 						fien.setSignature(fin.desc);
@@ -1173,7 +1181,6 @@ public class ASTfactory {
 							ast.setUsedBy(fien);
 						}else{
 						ASTFieldNode fien=new ASTFieldNode();
-						fien.setCallBy(afn);
 						afn.setUsedAsObject(fien);
 						fien.setName(fin.name);
 						fien.setOwner(fin.owner);
@@ -1357,7 +1364,6 @@ public class ASTfactory {
 								temp.setUsedBy(amn);
 								amn.addParameter(temp);
 							}
-							amn.setCallBy(afn);
 							Type returnType=Type.getReturnType(min.desc);
 							
 							if(!returnType.toString().equals("V")){
@@ -1422,7 +1428,6 @@ public class ASTfactory {
 							TypeInsnNode tin=(TypeInsnNode)ain;
 							ASTObjectNode aon=new ASTObjectNode();
 							aon.setObjectType(tin.desc);
-							aon.setCallBy(afn);
 							afn.setUsedAsObject(aon);
 							executionStack.push(aon);
 							break;
@@ -1570,7 +1575,6 @@ public class ASTfactory {
 							lock=executionStack.pop();
 						}
 						lock.setUsedBy(aon);
-						aon.setCallBy(lock);
 						break;
 					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
@@ -1588,7 +1592,6 @@ public class ASTfactory {
 							lock=executionStack.pop();
 						}
 						lock.setUsedBy(aon);
-						aon.setCallBy(lock);
 						break;
 					default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
