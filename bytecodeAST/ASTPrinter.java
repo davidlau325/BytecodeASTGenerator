@@ -255,16 +255,18 @@ public class ASTPrinter {
 						ASTMethodNode amn=(ASTMethodNode)tempFunction;
 						if(andriodOnly==true){
 							String check=amn.getOwner();
+							if(check.length()>7){
 							check=check.substring(0, 7);
 							if(check.equals("android")){
-							String rowName=classLevel.getName()+" "+functionLevel.getName()+" "+amn.getOwner()+" "+amn.getName()+" "+amn.getSignature();
-							pwOut.println("->"+rowName);
+							String rowName=classLevel.getName()+" "+functionLevel.getName()+" "+amn.getOwner()+" "+amn.getName();
+							pwOut.println(rowName);
 							ArrayList<ASTNode> callingRecord=new ArrayList<ASTNode>();
 							getRelatedAPI(pwOut,amn,callingRecord);
 							callingRecord.remove(amn);
 							currentChecking=amn;
 							getArgumentAPI(pwOut,amn,callingRecord);
 							pwOut.println();
+							}
 							}
 						}else{
 							String rowName=classLevel.getName()+" "+functionLevel.getName()+" "+amn.getOwner()+" "+amn.getName();

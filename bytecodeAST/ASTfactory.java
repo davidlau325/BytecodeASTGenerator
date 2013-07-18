@@ -225,7 +225,7 @@ public class ASTfactory {
 			int newLabel=0;
 			while(itr.hasNext()){
 				AbstractInsnNode ain=(AbstractInsnNode)itr.next();	
-				//System.out.println(ain.getOpcode()+" "+ain.getType()+" size:"+executionStack.size()+" flag:"+newLabel);
+				System.out.println(ain.getOpcode()+" "+ain.getType()+" size:"+executionStack.size()+" flag:"+newLabel);
 				if(newLabel==1){
 					newLabel=2;
 				}else if(newLabel==2){
@@ -408,9 +408,19 @@ public class ASTfactory {
 					{ arrayLoad(newLabel,"Int",uniqueIdentifier);
 					uniqueIdentifier++;}
 					break;
+				// 47
+				case Opcodes.LALOAD:
+					{ arrayLoad(newLabel,"Long",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
 				// 48
 				case Opcodes.FALOAD:
 					{ arrayLoad(newLabel,"Float",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
+				// 49
+				case Opcodes.DALOAD:
+					{ arrayLoad(newLabel,"Double",uniqueIdentifier);
 					uniqueIdentifier++;}
 					break;
 				// 50
@@ -426,6 +436,11 @@ public class ASTfactory {
 				// 52
 				case Opcodes.CALOAD:
 					{ arrayLoad(newLabel,"Char",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
+				// 53
+				case Opcodes.SALOAD:
+					{ arrayLoad(newLabel,"String",uniqueIdentifier);
 					uniqueIdentifier++;}
 					break;
 				// 54
@@ -458,9 +473,19 @@ public class ASTfactory {
 					{ arrayStore(newLabel,"Int Array",uniqueIdentifier);
 					uniqueIdentifier++;}
 					break;
+				// 80
+				case Opcodes.LASTORE:
+					{ arrayStore(newLabel,"Long Array",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
 				// 81
 				case Opcodes.FASTORE:
 					{ arrayStore(newLabel,"Float Array",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
+				// 82
+				case Opcodes.DASTORE:
+					{ arrayStore(newLabel,"Double Array",uniqueIdentifier);
 					uniqueIdentifier++;}
 					break;
 				// 83
@@ -470,7 +495,7 @@ public class ASTfactory {
 					uniqueIdentifier++;
 					}
 					break;
-				//84
+				// 84
 				case Opcodes.BASTORE:
 					{
 					arrayStore(newLabel,"Byte Array",uniqueIdentifier);
@@ -481,7 +506,12 @@ public class ASTfactory {
 				case Opcodes.CASTORE:
 					{ arrayStore(newLabel,"Char Array",uniqueIdentifier);
 					uniqueIdentifier++;}
-				break;
+					break;
+				// 86
+				case Opcodes.SASTORE:
+					{ arrayStore(newLabel,"String Array",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
 				// 87
 				case Opcodes.POP:
 					if(newLabel==2 && executionStack.isEmpty()){
@@ -514,6 +544,168 @@ public class ASTfactory {
 							executionStack.push(get);
 							break;
 						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
+					}
+					break;
+				// 90
+				case Opcodes.DUP_X1:
+				   {ASTNode get1;
+					ASTNode get2;
+					if(newLabel==2 && executionStack.isEmpty()){
+						get1=currentLabelNode;
+					}else{
+						get1=executionStack.pop();
+					}
+					if(newLabel==2 && executionStack.isEmpty()){
+						get2=currentLabelNode;
+					}else{
+						get2=executionStack.pop();
+					}
+					ASTNode dup=get1;
+					executionStack.push(dup);
+					executionStack.push(get2);
+					executionStack.push(get1);}
+					break;
+				// 91
+				case Opcodes.DUP_X2:
+					{ASTNode get1;
+					ASTNode get2;
+					ASTNode get3;
+					if(newLabel==2 && executionStack.isEmpty()){
+						get1=currentLabelNode;
+					}else{
+						get1=executionStack.pop();
+					}
+					if(newLabel==2 && executionStack.isEmpty()){
+						get2=currentLabelNode;
+					}else{
+						get2=executionStack.pop();
+					}
+					if(newLabel==2 && executionStack.isEmpty()){
+						get3=currentLabelNode;
+					}else{
+						get3=executionStack.pop();
+					}
+					ASTNode dup=get1;
+					executionStack.push(dup);
+					executionStack.push(get3);
+					executionStack.push(get2);
+					executionStack.push(get1);
+					}
+					break;
+				// 92
+				case Opcodes.DUP2:
+					{
+						ASTNode get1;
+						ASTNode get2;
+						if(newLabel==2 && executionStack.isEmpty()){
+							get1=currentLabelNode;
+						}else{
+							get1=executionStack.pop();
+						}
+						if(executionStack.isEmpty()){
+							executionStack.push(get1);
+							executionStack.push(get1);
+						}else{
+							get2=executionStack.pop();
+							ASTNode dup1=get1;
+							ASTNode dup2=get2;
+							executionStack.push(get1);
+							executionStack.push(get2);
+							executionStack.push(dup1);
+							executionStack.push(dup2);
+						}
+					}
+					break;
+				// 93
+				case Opcodes.DUP2_X1:
+					{
+						ASTNode get1;
+						ASTNode get2;
+						ASTNode get3;
+						if(newLabel==2 && executionStack.isEmpty()){
+							get1=currentLabelNode;
+						}else{
+							get1=executionStack.pop();
+						}
+						if(newLabel==2 && executionStack.isEmpty()){
+							get2=currentLabelNode;
+						}else{
+							get2=executionStack.pop();
+						}
+						if(executionStack.isEmpty()){
+							ASTNode dup1=get1;
+							executionStack.push(dup1);
+							executionStack.push(get2);
+							executionStack.push(get1);
+						}else{
+							get3=executionStack.pop();
+							ASTNode dup1=get1;
+							ASTNode dup2=get2;
+							executionStack.push(dup2);
+							executionStack.push(dup1);
+							executionStack.push(get3);
+							executionStack.push(get2);
+							executionStack.push(get1);
+						}
+					}
+					break;
+				// 94
+				case Opcodes.DUP2_X2:
+					{
+						ASTNode get1;
+						ASTNode get2;
+						ASTNode get3;
+						ASTNode get4;
+						if(newLabel==2 && executionStack.isEmpty()){
+							get1=currentLabelNode;
+						}else{
+							get1=executionStack.pop();
+						}
+						if(newLabel==2 && executionStack.isEmpty()){
+							get2=currentLabelNode;
+						}else{
+							get2=executionStack.pop();
+						}
+						if(executionStack.isEmpty()){
+							executionStack.push(get1);
+							executionStack.push(get2);
+							executionStack.push(get1);
+						}else{
+							get3=executionStack.pop();
+							if(executionStack.isEmpty()){
+							executionStack.push(get1);
+							executionStack.push(get2);
+							executionStack.push(get3);
+							executionStack.push(get2);
+							executionStack.push(get1);
+							}else{
+							get4=executionStack.pop();
+							executionStack.push(get2);
+							executionStack.push(get1);
+							executionStack.push(get4);
+							executionStack.push(get3);
+							executionStack.push(get2);
+							executionStack.push(get1);
+							}
+						}
+					}
+					break;
+				// 95
+				case Opcodes.SWAP:
+					{ ASTNode get1;
+					  ASTNode get2;
+						if(newLabel==2 && executionStack.isEmpty()){
+							get1=currentLabelNode;
+						}else{
+							get1=executionStack.pop();
+						}
+						if(newLabel==2 && executionStack.isEmpty()){
+							get2=currentLabelNode;
+						}else{
+							get2=executionStack.pop();
+						}
+						executionStack.push(get1);
+						executionStack.push(get2);
 					}
 					break;
 				// 96
@@ -670,6 +862,21 @@ public class ASTfactory {
 						default: System.out.println("no handle "+ain.getOpcode()+" "+ain.getType()); break;
 					}
 					break;
+				// 113
+				case Opcodes.LREM:
+					{ loadArithmetic(newLabel,"%","Long",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
+				// 114
+				case Opcodes.FREM:
+					{ loadArithmetic(newLabel,"%","Float",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
+				// 115
+				case Opcodes.DREM:
+					{ loadArithmetic(newLabel,"%","Double",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
 				// 116
 				case Opcodes.INEG:
 					{ setNeg(newLabel,"Int",uniqueIdentifier);
@@ -683,6 +890,11 @@ public class ASTfactory {
 				// 118
 				case Opcodes.FNEG:
 					{ setNeg(newLabel,"Float",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
+				// 119
+				case Opcodes.DNEG:
+					{ setNeg(newLabel,"Double",uniqueIdentifier);
 					uniqueIdentifier++;}
 					break;
 				// 120
@@ -702,9 +914,19 @@ public class ASTfactory {
 					uniqueIdentifier++;
 					}
 					break;
+				// 123
+				case Opcodes.LSHR:
+					{ loadArithmetic(newLabel,">>","Long",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
 				// 124
 				case Opcodes.IUSHR:
 					{ loadArithmetic(newLabel,">>>","int",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
+				// 125
+				case Opcodes.LUSHR:
+					{ loadArithmetic(newLabel,">>>","Long",uniqueIdentifier);
 					uniqueIdentifier++;}
 					break;
 				// 126
@@ -733,7 +955,12 @@ public class ASTfactory {
 					loadArithmetic(newLabel,"^","Int",uniqueIdentifier);
 					uniqueIdentifier++;
 					}
-				break;
+					break;
+				// 131
+				case Opcodes.LXOR:
+					{ loadArithmetic(newLabel,"^","Long",uniqueIdentifier);
+					uniqueIdentifier++;}
+					break;
 				// 132
 				case Opcodes.IINC:
 					//Integer increment, no stack operation, ignore
@@ -758,6 +985,10 @@ public class ASTfactory {
 				case Opcodes.L2F:
 					{ castValue(newLabel,"Long","Float");}
 					break;
+				// 138
+				case Opcodes.L2D:
+					{ castValue(newLabel,"Long","Double");
+					break;}
 				// 139
 				case Opcodes.F2I:
 					{ castValue(newLabel,"Float","Int");}
@@ -774,6 +1005,10 @@ public class ASTfactory {
 				case Opcodes.D2I:
 					{ castValue(newLabel,"Double","Int");}
 					break;
+				// 143
+				case Opcodes.D2L:
+					{ castValue(newLabel,"Double","Long");}
+					break;
 				// 144
 				case Opcodes.D2F:
 					{ castValue(newLabel,"Double","Float");}
@@ -789,7 +1024,11 @@ public class ASTfactory {
 					{
 					castValue(newLabel,"Int","Char");
 					}
-				break;
+					break;
+				// 147
+				case Opcodes.I2S:
+					{ castValue(newLabel,"Int","String");}
+					break;
 				// 148
 				case Opcodes.LCMP:
 					{

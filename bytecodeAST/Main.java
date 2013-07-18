@@ -17,13 +17,15 @@ public class Main {
 	 */
 	
 	//main parameter
-	private final static String jarName="youdaoDict";
+	private final static String jarName="4646_d8ee5eeb-034d-43dc-a3bd-ab694f4523c4-dex2jar";
 	private final static String fileName = "./jar/"+jarName+".jar";
 	private static ZipFile f;
 	
 	public static void main(String[] args) throws Exception{
 	    
-	    
+//	    String fileName=args[0];
+//	    int jarPost=fileName.indexOf(".jar");
+//	    String jarName=fileName.substring(0,jarPost);
 		f = new ZipFile(fileName);
 	    Enumeration<? extends ZipEntry> en=f.entries();
 	    ArrayList<String> allClasses=new ArrayList<String>();
