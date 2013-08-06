@@ -1,9 +1,13 @@
 package bytecodeAST;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.objectweb.asm.ClassReader;
@@ -17,18 +21,32 @@ public class Main {
 	 */
 	
 	//main parameter
-	private final static String jarName="4646_d8ee5eeb-034d-43dc-a3bd-ab694f4523c4-dex2jar";
-	private final static String fileName = "./jar/"+jarName+".jar";
+//	private final static String jarName="ciku";
+//	private final static String fileName = "./jar/"+jarName+".jar";
 	private static ZipFile f;
 	
 	public static void main(String[] args) throws Exception{
 	    
-//	    String fileName=args[0];
-//	    int jarPost=fileName.indexOf(".jar");
-//	    String jarName=fileName.substring(0,jarPost);
+	    String fileName=args[0];
+	    int jarPost=fileName.indexOf(".jar");
+	    String jarName=fileName.substring(0,jarPost);
+	//    String jarName="ciku";
 		f = new ZipFile(fileName);
 	    Enumeration<? extends ZipEntry> en=f.entries();
-	    ArrayList<String> allClasses=new ArrayList<String>();
+	    Scanner checkAllAPI=new Scanner(new FileInputStream("android_java_api"));
+	    HashMap<String,Boolean> androidAllAPI=new HashMap<String,Boolean>();
+	    while(checkAllAPI.hasNextLine()){
+	    	androidAllAPI.put(checkAllAPI.nextLine(), true);
+	    }
+	    checkAllAPI.close();
+	    
+	    Scanner checkAPI=new Scanner(new FileInputStream("android_api"));
+	    HashMap<String,Boolean> androidAPI=new HashMap<String,Boolean>();
+	    while(checkAPI.hasNextLine()){
+	    	androidAPI.put(checkAPI.nextLine(), true);
+	    }
+	    checkAPI.close();
+	    
 	    ASTClassNode head=new ASTClassNode();
 	    head.setName(jarName);
 	    
@@ -50,7 +68,6 @@ public class Main {
         
         ASTClassNode astClassNode=new ASTClassNode();
         astClassNode.setName(classNode.name);
-        allClasses.add(classNode.name);
         astClassNode.setSuperName(classNode.superName);
         head.setChild(astClassNode);
         for(Object inter:classNode.interfaces){
@@ -58,6 +75,7 @@ public class Main {
         }
         
         List<MethodNode> mnList=classNode.methods;
+        		try{
         		for(MethodNode mn:mnList){
         			ASTfactory af=new ASTfactory();
         			af.generateFunctionAST(mn,fieldVariable);	
@@ -65,10 +83,17 @@ public class Main {
         			functionNode.setParentClass(astClassNode);
         			astClassNode.setChild(functionNode);
         		}
+        		}catch(Exception ex){
+        			PrintWriter pwErr=new PrintWriter(new FileOutputStream(jarName+"_err.txt"));
+        			pwErr.println(ex.getMessage());
+        			pwErr.close();
+        			System.out.println("Failed: "+jarName);
+        		}
 	    	}
 	    }
 	    
-	    ASTPrinter print=new ASTPrinter(head,jarName,allClasses);
+	    ASTPrinter print=new ASTPrinter(head,jarName,androidAPI,androidAllAPI);
         print.makeMatrix(true);
+        System.out.println("Succeed: "+jarName);
 	}
 }

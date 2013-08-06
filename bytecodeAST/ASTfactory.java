@@ -225,7 +225,7 @@ public class ASTfactory {
 			int newLabel=0;
 			while(itr.hasNext()){
 				AbstractInsnNode ain=(AbstractInsnNode)itr.next();	
-				System.out.println(ain.getOpcode()+" "+ain.getType()+" size:"+executionStack.size()+" flag:"+newLabel);
+				//System.out.println(ain.getOpcode()+" "+ain.getType()+" size:"+executionStack.size()+" flag:"+newLabel);
 				if(newLabel==1){
 					newLabel=2;
 				}else if(newLabel==2){

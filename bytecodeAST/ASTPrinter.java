@@ -3,21 +3,26 @@ package bytecodeAST;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.TreeMap;
+import java.util.HashMap;
 
 public class ASTPrinter {
 	
 	protected ASTNode beginNode;
 	protected String jarName;
-	protected TreeMap<String,ArrayList<String>> matrix;
-	protected ArrayList<String> selfClasses;
 	protected ASTMethodNode currentChecking;
+	protected String currentKey;
+	protected HashMap<String,Boolean> androidAPI;
+	protected HashMap<String,Boolean> androidAllAPI;
+	protected HashMap<String,Integer> recordCount;
+ // protected PrintWriter json;
 	
-	public ASTPrinter(ASTNode begin,String jarName,ArrayList<String> selfClasses){
+	public ASTPrinter(ASTNode begin,String jarName,HashMap<String,Boolean> androidAPI,HashMap<String,Boolean> androidAllAPI){
 		this.beginNode=begin;
 		this.jarName=jarName;
-		this.matrix=new TreeMap<String,ArrayList<String>>();
-		this.selfClasses=selfClasses;
+		this.androidAPI=androidAPI;
+		this.androidAllAPI=androidAllAPI;
+		this.currentKey="";
+		this.recordCount=new HashMap<String,Integer>();
 	}
 	
 	
@@ -51,18 +56,10 @@ public class ASTPrinter {
 		pwOut.println("Name: "+amn.getName());
 		pwOut.println("Owner: "+amn.getOwner());
 		pwOut.println("Sign: "+amn.getSignature());
-		pwOut.println("Call By:{");
-		for(ASTNode call:amn.getCallBy()){
-			pwOut.println(call.getASTKind());
-		}
-		pwOut.println("}");
 	}
 	private void printASTReturnNode(PrintWriter pwOut,ASTReturnNode arn){
 		pwOut.println("ASTReturnNode");
 		pwOut.println("Type: "+arn.getReturnType());
-		ASTFunctionNode aafn=arn.getReturnFunction();
-		pwOut.println("From Method: "+aafn.getName());
-		pwOut.println("Method Sign: "+aafn.getDesc());
 	}
 	private void printASTFieldNode(PrintWriter pwOut,ASTFieldNode afn){
 		pwOut.println("ASTFieldNode");
@@ -113,10 +110,12 @@ public class ASTPrinter {
 		pwOut.println("Type: "+aan.getArrayType());
 		pwOut.println("Size: "+aan.getArraySize().getASTKind());
 	}
-	private void checkReturnKind(PrintWriter pwOut,ASTNode usedReturn,int level){
-		if(level>2){
-			return;
-		}
+	private void printASTObjectNode(PrintWriter pwOut,ASTObjectNode aon){
+		pwOut.println("ASTObjectNode");
+		pwOut.println("Type: "+aon.getObjectType());
+		pwOut.println("Name: "+aon.getObjectName());
+	}
+	private void checkReturnKind(PrintWriter pwOut,ASTNode usedReturn){
 		switch(usedReturn.getASTKind()){
 		case "ASTArrayNode":
 			printASTArrayNode(pwOut,(ASTArrayNode)usedReturn);
@@ -148,25 +147,17 @@ public class ASTPrinter {
 		case "ASTReturnNode":
 			printASTReturnNode(pwOut,(ASTReturnNode)usedReturn);
 			break;
-		default:
-			System.out.println(usedReturn.getASTKind());
+		case "ASTObjectNode":
+			printASTObjectNode(pwOut,(ASTObjectNode)usedReturn);
 			break;
-		}
-		if(level<2){
-		pwOut.println("Used By {");
-		for(ASTNode ast:usedReturn.getUsedBy()){
-			checkReturnKind(pwOut,ast,(level+1));
-		}
-		pwOut.println("}");
-		pwOut.println("Used As Object {");
-		for(ASTNode ast:usedReturn.getUsedAsObject()){
-			checkReturnKind(pwOut,ast,(level+1));
-		}
-		pwOut.println("}");
+		default:
+			break;
 		}
 	}
 	private void getRelatedAPI(PrintWriter pwOut,ASTNode current,ArrayList<ASTNode> CallingRecord){
 		if(current!=null){
+		//	checkReturnKind(this.json,current);
+			
 			if(CallingRecord.contains(current)){
 				return;
 			}else{
@@ -174,28 +165,34 @@ public class ASTPrinter {
 			if(current.getASTKind().equals("ASTMethodNode")){
 				ASTMethodNode amn=(ASTMethodNode)current;
 				String name=amn.getOwner()+" "+amn.getName();
-					if(!this.selfClasses.contains(amn.getOwner())){
-						pwOut.println(name);
+					if(this.androidAllAPI.get(name)!=null){
+						pwOut.println(this.currentKey+","+name);
 					}
 			}	
 			
 		if(!current.getUsedBy().isEmpty()){
+		//	this.json.println("UsedBy:{");
 			for(ASTNode now:current.getUsedBy()){
 				ASTNode next=getNext(pwOut,now);
 				getRelatedAPI(pwOut,next,CallingRecord);
 			}
+		//	this.json.println("}");
 		}
 		if(!current.getUsedAsObject().isEmpty()){
+		//	this.json.println("UsedAsObject:{");
 			for(ASTNode now:current.getUsedAsObject()){
 				ASTNode next=getNext(pwOut,now);
 				getRelatedAPI(pwOut,next,CallingRecord);
 			}
+		//	this.json.println("}");
 		}
 		if(!current.getCallBy().isEmpty()){
+		//	this.json.println("CallBy:{");
 			for(ASTNode call:current.getCallBy()){
 				ASTNode next=getNext(pwOut,call);
 				getRelatedAPI(pwOut,next,CallingRecord);
 			}
+		//	this.json.println("}");
 		}
 		}
 		}else{
@@ -220,8 +217,9 @@ public class ASTPrinter {
 				CallingRecord.add(check);
 				if(check.getASTKind().equals("ASTMethodNode")){
 					ASTMethodNode amn=(ASTMethodNode)check;
-					if(!this.selfClasses.contains(amn.getOwner()) && !currentChecking.equals(amn)){
-						pwOut.println(amn.getOwner()+" "+amn.getName());
+					String name=amn.getOwner()+" "+amn.getName();
+					if(this.androidAllAPI.get(name)!=null && !currentChecking.equals(amn)){
+						pwOut.println(this.currentKey+","+name);
 					}
 					for(Object obj:amn.getPara()){
 						ASTNode ast=(ASTNode)obj;
@@ -245,7 +243,8 @@ public class ASTPrinter {
 	}
 	public void makeMatrix(boolean andriodOnly) throws Exception{
 		ASTClassNode acn=(ASTClassNode)this.beginNode;
-		PrintWriter pwOut=new PrintWriter(new FileOutputStream("Matrix/"+jarName+".txt"));
+		PrintWriter pwOut=new PrintWriter(new FileOutputStream(jarName+".txt"));
+	//	this.json=new PrintWriter(new FileOutputStream(this.jarName+"_json.txt"));
 		for(ASTNode tempHead:acn.getChild()){
 			ASTClassNode classLevel=(ASTClassNode)tempHead;
 			for(ASTNode tempClass:classLevel.getChild()){
@@ -254,18 +253,28 @@ public class ASTPrinter {
 					if(tempFunction.getASTKind().equals("ASTMethodNode")){
 						ASTMethodNode amn=(ASTMethodNode)tempFunction;
 						if(andriodOnly==true){
-							String check=amn.getOwner();
-							if(check.length()>7){
-							check=check.substring(0, 7);
-							if(check.equals("android")){
-							String rowName=classLevel.getName()+" "+functionLevel.getName()+" "+amn.getOwner()+" "+amn.getName();
-							pwOut.println(rowName);
+							String rowName=amn.getOwner()+" "+amn.getName();
+							if(rowName.length()>7){
+							if(this.androidAPI.get(rowName)!=null){
+								if(this.recordCount.get(rowName)!=null){
+									int methodCount=this.recordCount.get(rowName);
+									this.currentKey=this.jarName+"-"+rowName+"-"+methodCount;
+									this.recordCount.put(rowName,methodCount+1);
+								}else{
+									this.currentKey=this.jarName+"-"+rowName+"-0";
+									this.recordCount.put(rowName, 1);
+								}
 							ArrayList<ASTNode> callingRecord=new ArrayList<ASTNode>();
+					//		this.json.println(this.currentKey+"{");
+					//		this.json.println("return:{");
 							getRelatedAPI(pwOut,amn,callingRecord);
+					//		this.json.println("}");
 							callingRecord.remove(amn);
 							currentChecking=amn;
+					//		this.json.println("argument:{");
 							getArgumentAPI(pwOut,amn,callingRecord);
-							pwOut.println();
+					//		this.json.println("}");
+					//		this.json.println("}");
 							}
 							}
 						}else{
@@ -276,72 +285,7 @@ public class ASTPrinter {
 				}
 			}
 		}
+	//	this.json.close();
 		pwOut.close();
 	}
-	
-	public void printAllMethod(boolean andriodOnly) throws Exception{
-		ASTClassNode acn=(ASTClassNode)this.beginNode;
-		PrintWriter pwOut=new PrintWriter(new FileOutputStream("Result/"+jarName+".txt"));
-		int countCall=0;
-		int andriodCall=0;
-		for(ASTNode tempHead:acn.getChild()){
-			ASTClassNode classLevel=(ASTClassNode)tempHead;
-			for(ASTNode tempClass:classLevel.getChild()){
-				ASTFunctionNode functionLevel=(ASTFunctionNode)tempClass;
-				for(ASTNode tempFunction:functionLevel.getChild()){
-					if(tempFunction.getASTKind().equals("ASTMethodNode")){
-						ASTMethodNode amn=(ASTMethodNode)tempFunction;
-						if(andriodOnly==true){
-							String check=amn.getOwner();
-							check=check.substring(0, 7);
-							if(check.equals("android")){
-								pwOut.println(amn.getName());
-								pwOut.println(amn.getOwner());
-								pwOut.println(amn.getSignature());
-								pwOut.println("Call By: {");
-								for(ASTNode call:amn.getCallBy()){
-								pwOut.println(call.getASTKind());	
-								}
-								pwOut.println("}");
-								pwOut.println("argument: {");
-								for(ASTNode para:amn.getPara()){
-									pwOut.println(para.getASTKind());
-								}
-								pwOut.println("}");
-								pwOut.println("return value:{");
-								ASTNode returnValue=amn.getReturnValue();
-								if(returnValue!=null){
-								ASTObjectNode aon=(ASTObjectNode)returnValue;
-								pwOut.println(aon.getObjectType());
-								pwOut.println("Used By: {");
-								for(ASTNode usedReturn:amn.getUsedBy()){
-									checkReturnKind(pwOut,usedReturn,0);
-								}
-								pwOut.println("}");
-								pwOut.println("Used As Object:{");
-								for(ASTNode usedObject:amn.getUsedAsObject()){
-									checkReturnKind(pwOut,usedObject,0);
-								}
-								pwOut.println("}");
-								}
-								pwOut.println("}");
-								pwOut.println();
-							andriodCall++;
-							}
-						}else{
-						pwOut.println(amn.getName());
-						pwOut.println(amn.getOwner());
-						pwOut.println(amn.getSignature());
-						pwOut.println();
-						}
-						countCall++;
-					}
-				}
-			}
-		}
-		System.out.println(countCall);
-		System.out.println(andriodCall);
-		pwOut.close();
-	}
-
 }
