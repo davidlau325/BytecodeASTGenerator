@@ -73,8 +73,8 @@ public class Main {
         for(Object inter:classNode.interfaces){
         	astClassNode.addInterface(inter.toString());
         }
-        
-        List<MethodNode> mnList=classNode.methods;
+        @SuppressWarnings("unchecked")
+        List<MethodNode> mnList=(List<MethodNode>)classNode.methods;
         		try{
         		for(MethodNode mn:mnList){
         			ASTfactory af=new ASTfactory();
