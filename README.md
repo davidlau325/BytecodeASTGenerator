@@ -4,9 +4,13 @@ BytecodeASTGenerator
 An Abstract Syntax Tree generator from Java bytecode through the integration of ASM Engineering Library.
 
 ##Usage:
-1. Compile
-	'make compile'
-2. Run
-	'make run file="jarfilename"' <- jarfilename is the filename of the .jar file that you want to interpret, eg. ciku.jar
-3. Clean Build
-	'make clean'
+###1. Compile
+	`make compile`
+###2. Run
+	`make run file="jarfilename"` 
+	jarfilename is the filename of the .jar file that you want to interpret, eg. ciku.jar
+###3. Clean Build
+	`make clean`
+
+##Result Data:
+The result AST would be generated within the same folder and with the same .jar filename in .txt format
